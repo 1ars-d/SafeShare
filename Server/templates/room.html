@@ -1,7 +1,21 @@
 {% extends 'base.html' %} {% block content %}
 <div class="message-box">
-  <h2>Room {{room}}</h2>
-  <div class="messages" id="messages"></div>
+  <h2>Room <span class="room-code">{{room}}</span></h2>
+  <div class="messages" id="messages">
+    <div class="message-item">
+        <div class="message-info">
+            <p class="message-name">
+                Lars
+            </p>
+            <p class="message-time">
+                14.03.2023 14:34
+            </p>
+        </div>
+        <p class="message-content">
+            Hello
+        </p>
+    </div>
+  </div>
   <div class="inputs">
     <input
       type="text"

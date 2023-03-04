@@ -1,11 +1,19 @@
 from flask import Flask, render_template, session, request
 from flask_socketio import SocketIO
+import sqlite3
 
 # Server Setup
 app = Flask(__name__)
 app.config["SECRET_KEY"] = 'key!'
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 socketio = SocketIO(app)
+
+# Database Setup
+conn = sqlite3.connect("ROOMS_db.sqlite")
+cur = conn.cursor()
+cur.execute('CREATE TABLE rooms (code TEXT, members INTEGER)')
+cur.execute('CREATE TABLE messages (content TEXT, content_type TEXT, author TEXT, timestamp TEXT)')
+conn.commit
 
 @app.route("/", methods=["POST", "GET"])
 def home():
@@ -42,7 +50,7 @@ def home():
 @app.route("/room")
 def room():
     room = session.get("room")
-    return render_template("room.html", room=room)
+    return render_template("room.html", room="HDKT")
 
 if __name__ == "__main__":
     socketio.run(app, debug=True)

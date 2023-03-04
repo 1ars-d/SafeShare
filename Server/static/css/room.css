@@ -2,8 +2,7 @@
     box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
     padding: 25px;
     border-radius: 5px;
-    margin-top: 5vh;
-    height: 80vh;
+    height: 90vh;
     display: flex;
     flex-direction: column;
     width: 80vw;
@@ -14,6 +13,10 @@
     overflow-y: scroll;
     flex: 1;
     width: 100%;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .inputs {
@@ -29,6 +32,30 @@
 #add-btn {
     padding: 0 10px;
     font-size: 25px;
-    width: 60px;
+    width: 50px;
+}
+
+.message-item {
+    background-color: rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
+    border-radius: 2px;
+}
+
+.message-info {
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
   
+
+.message-name {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.room-code {
+    color: var(--main-color);
+}
