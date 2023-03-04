@@ -1,0 +1,20 @@
+.name-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    gap: 10px;
+    width: 100%;
+}
+
+.join-form {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.create-div {
+    margin-top: 15px;
+    padding: 20px;
+}
