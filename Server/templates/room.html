@@ -1,8 +1,11 @@
 {% extends 'base.html' %} {% block content %}
-<div class="message-box">
-  <h2>Room <span class="room-code">{{room}}</span></h2>
+<div class="chat">
+  <div class="room-header">
+    <h2><span class="room-code"># {{room}}</span></h2>
+    <h2><span id="remaining-time"></span></h2>
+  </div>
   <div class="messages" id="messages"></div>
-  <div class="inputs">
+  <form class="inputs" id="message-form">
     <input
       type="text"
       rows="3"
@@ -10,49 +13,66 @@
       name="message"
       id="message"
     />
-    <button class="button-no-bg" type="button" id="add-btn">+</button>
-    <button type="button" name="send" id="send-btn" onClick="sendMessage()">
-      Send
-    </button>
-  </div>
+    <input type="file" id="file-select" />
+    <label for="file-select" class="upload-file"
+      ><svg
+        height="25px"
+        width="25px"
+        version="1.1"
+        id="Layer_1"
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        viewBox="0 0 280.067 280.067"
+        xml:space="preserve"
+      >
+        <g>
+          <path
+            style="fill: #ffffff"
+            d="M149.823,257.142c-31.398,30.698-81.882,30.576-113.105-0.429
+       c-31.214-30.987-31.337-81.129-0.42-112.308l-0.026-0.018L149.841,31.615l14.203-14.098c23.522-23.356,61.65-23.356,85.172,0
+       s23.522,61.221,0,84.586l-125.19,123.02l-0.044-0.035c-15.428,14.771-40.018,14.666-55.262-0.394
+       c-15.244-15.069-15.34-39.361-0.394-54.588l-0.044-0.053l13.94-13.756l69.701-68.843l13.931,13.774l-83.632,82.599
+       c-7.701,7.596-7.701,19.926,0,27.53s20.188,7.604,27.88,0L235.02,87.987l-0.035-0.026l0.473-0.403
+       c15.682-15.568,15.682-40.823,0-56.39s-41.094-15.568-56.776,0l-0.42,0.473l-0.026-0.018l-14.194,14.089L50.466,158.485
+       c-23.522,23.356-23.522,61.221,0,84.577s61.659,23.356,85.163,0l99.375-98.675l14.194-14.089l14.194,14.089l-14.194,14.098
+       l-99.357,98.675C149.841,257.159,149.823,257.142,149.823,257.142z"
+          />
+        </g></svg
+    ></label>
+    <button type="submit" name="send" id="send-btn">Send</button>
+  </form>
 </div>
 <script type="text/javascript">
-  var socketio = io();
-
-  const messages = document.getElementById("messages");
-
-  const createMessage = (name, msg) => {
-    const content = `
-    <div class="message-item">
-      <div class="message-info">
-        <p class="message-name">Lars</p>
-        <p class="message-time">14.03.2023 14:34</p>
-      </div>
-      <p class="message-content">Hello</p>
-    </div>
-    `;
-
-    messages.innerHTML += content;
-  };
-
-  const createLog = (log) => {
-    const content = `<div class="log-item">${log}</div>`;
-    messages.innerHTML += content;
-  };
-
-  socketio.on("message", (data) => {
-    createMessage(data.name, data.message);
-  });
-
-  socketio.on("log", (data) => {
-    createLog(data.log);
-  });
-
-  const sendMessage = () => {
-    const message = document.getElementById("message");
-    if (message.value == "") return;
-    socketio.emit("message", { data: message.value });
-    message.value = "";
-  };
+  // Set passed variables
+  const targetDateString = "{{timestamp[0]}}";
+  const userName = "{{name}}";
 </script>
-{% endblock %}
+<script
+  type="text/javascript"
+  src="{{url_for('static', filename='js/room.js')}}"
+></script>
+
+{% for element in history %}
+<script type="text/javascript">
+  // Get History from backend
+  if ("{{element.type}}" == "message") {
+    createMessage(
+      "{{element.author}}",
+      "{{element.content}}",
+      "{{element.timestamp}}"
+    );
+  } else if ("{{element.type}}" == "file") {
+    var str = "{{element.content}}";
+    var base64String = "data:image/png;base64," + str;
+    createFileItem(
+      "{{element.author}}",
+      base64String,
+      "{{element.fileType}}",
+      "{{element.fileName}}",
+      "{{element.timestamp}}"
+    );
+  } else if ("{{element.type}}" == "log") {
+    createLog("{{element.content}}", "{{element.timestamp}}");
+  }
+</script>
+{% endfor %} {% endblock %}

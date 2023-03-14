@@ -1,20 +1,144 @@
 .name-form {
-    display: flex;
-    flex-direction: column;
-    justify-content: start;
-    gap: 10px;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  gap: 10px;
+  width: 100%;
 }
 
 .join-form {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    width: 100%;
-    margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+}
+
+.card label {
+  font-size: 18px;
 }
 
 .create-div {
-    margin-top: 15px;
-    padding: 20px;
+  margin-top: 15px;
+  padding: 20px;
+}
+
+.nav-bar {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 25px;
+  font-size: 18px;
+  padding-top: 25px;
+  padding-bottom: 25px;
+  box-shadow: rgba(0, 0, 0, 0.13) 0px 2px 6px;
+}
+
+.home-top {
+  gap: 30px;
+  padding: 50px 0;
+  width: 90%;
+  display: flex;
+  align-items: start;
+  justify-content: space-evenly;
+}
+
+.position-text {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.recent-rooms {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 600px;
+  flex: 1;
+}
+
+.create-form {
+  flex: 1;
+  max-width: 450px;
+}
+
+.recent-title {
+  font-size: 20px;
+  color: var(--secondary-color);
+}
+
+.room-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.room-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  padding: 10px;
+}
+
+.room-item:hover {
+  cursor: pointer;
+  border: 1px solid var(--main-color);
+}
+
+.room-item-label {
+  color: var(--main-color);
+  font-size: 18px;
+  pointer-events: none;
+}
+
+.room-item-time {
+  font-size: 18px;
+  pointer-events: none;
+  color: var(--text-color);
+}
+
+#code-input {
+  flex: 1;
+}
+
+.usage {
+  width: 100%;
+  padding: 40px 0;
+  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+}
+
+.usage p {
+  padding: 15px;
+  text-align: center;
+}
+
+.create-now {
+  margin-top: 5px;
+}
+
+@media screen and (max-width: 750px) {
+  .home-top {
+    flex-direction: column;
+    padding: 30px 10px;
+    align-items: center;
+  }
+
+  .create-form {
+    width: 100%;
+  }
+
+  .recent-rooms {
+    width: 100%;
+  }
 }

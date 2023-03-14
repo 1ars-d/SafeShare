@@ -1,21 +1,65 @@
-{% extends 'base.html' %} {% block content %}
-{%if error %}
+{% extends 'base.html' %} {% block content %} {%if error %}
 <div class="error">{{error}}</div>
 {% endif %}
-<form method="post">
+<div class="nav-bar">
+  <div class="nav-item">Home</div>
+  <div class="nav-item">Usage</div>
+  <div class="nav-item">About</div>
+</div>
+<div class="home-top">
+  <form method="post" class="create-form">
+    <p class="position-text">
+      <span class="primary-color">TDC</span>
+      &gt
+      <span class="primary-blue">Create Room</span>
+    </p>
     <div class="card">
-        <h3>Create or Join a Room</h3>
-        <div class="name-form">
-            <input type="text" id="name-input" name="name" placeholder="Name" value="{{name}}" />
-        </div>
-        <div class="join-form">
-            <input placeholder="Room Code" id="code-input" name="code" value="{{code}}" />
-            <button type="submit" name="join">Join</button>
-        </div>
+      <div class="name-form">
+        <input
+          type="text"
+          id="name-input"
+          name="name"
+          placeholder="Username"
+          value="{{name}}"
+        />
+      </div>
+      <label class="primary-color" for="code-input">Join</label>
+      <div class="join-form">
+        <input
+          placeholder="Room Code"
+          id="code-input"
+          name="code"
+          value="{{code}}"
+        />
+        <button type="submit" name="join">Join</button>
+      </div>
+      <label class="primary-blue">Create Room</label>
+      <button class="button-no-bg" name="create" type="submit">
+        Create New Room
+      </button>
     </div>
-    <div class="create-div card">
-        <button class="button-no-bg" name="create" type="submit">Create New Room</button>
+  </form>
+  <div class="recent-rooms">
+    <p class="recent-title">Your Recent Rooms</p>
+    <div class="room-list">
+      <div class="room-item">
+        <p class="room-item-label">ANBKD</p>
+        <p class="room-item-time">05:20</p>
+      </div>
     </div>
-</form>
+  </div>
+</div>
+<div class="usage">
+  <h2>Usage</h2>
+  <p>
+    This app lets you create private chat rooms to transfer texts and files
+    between devices.
+  </p>
+  <p>
+    These rooms are only temporary and will be deleted after a certain amount of
+    time.
+  </p>
+  <button class="text-button create-now">Create now ➔</button>
+</div>
 
 {%endblock%}
