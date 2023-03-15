@@ -24,7 +24,6 @@ setup_db()
 
 
 def check_rooms():
-    print("hello")
     """ conn = sqlite3.connect("ROOMS_db.sqlite")
     cur = conn.cursor()
     due_time = (datetime.datetime.now() -

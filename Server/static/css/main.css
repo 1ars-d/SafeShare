@@ -15,6 +15,13 @@
   --text-color: #22292f;
 }
 
+::selection {
+  background: #0697713c; /* WebKit/Blink Browsers */
+}
+::-moz-selection {
+  background: #04be8c3c; /* Gecko Browsers */
+}
+
 body {
   color: var(--text-color);
   background-color: #f9f9f9;

@@ -4,6 +4,22 @@ const messages = document.getElementById("messages");
 const fileInput = document.getElementById("file-select");
 const form = document.getElementById("message-form");
 
+const messageInput = document.getElementById("message");
+const filePreview = document.getElementById("file-preview");
+const filePreviewText = document.getElementById("file-preview-text");
+
+fileInput.addEventListener("change", (event) => {
+  var files = fileInput.files;
+  if (files.length) {
+    filePreview.classList.remove("dp-none");
+    messageInput.classList.add("dp-none");
+    filePreviewText.innerHTML = files[0].name;
+  } else {
+    filePreview.classList.add("dp-none");
+    messageInput.classList.remove("dp-none");
+  }
+});
+
 // Room Countdown
 const closeTime = 1; // in minutes
 const targetDate = new Date(targetDateString);
@@ -68,7 +84,7 @@ const createFileItem = (name, src, fileType, fileName, timestamp) => {
           <p class="message-time">${timestamp}</p>
         </div>
         <div class="file-container">
-          <img src="${src}" alt="${fileName}" />
+          <a href="${src}" download="${fileName}"><img src="${src}" alt="${fileName}" /></a>
         </div>
       </div>
       `;
@@ -80,7 +96,9 @@ const createFileItem = (name, src, fileType, fileName, timestamp) => {
           <p class="message-time">${timestamp}</p>
         </div>
         <div class="file-container">
-          <a href="${src}" download="${fileName}">${fileName}</a>
+          <a href="${src}" download="${fileName}" class="file-download"><svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 30 30" width="30px" height="30px" fill="${
+      name == userName ? "white" : "#04be8c"
+    }">    <path d="M24.707,8.793l-6.5-6.5C18.019,2.105,17.765,2,17.5,2H7C5.895,2,5,2.895,5,4v22c0,1.105,0.895,2,2,2h16c1.105,0,2-0.895,2-2 V9.5C25,9.235,24.895,8.981,24.707,8.793z M18,10c-0.552,0-1-0.448-1-1V3.904L23.096,10H18z"/></svg><p>${fileName}</p></a>
         </div>
       </div>
       `;
@@ -128,6 +146,11 @@ const sendMessage = (event) => {
       fileType: file.type,
       fileName: file.name,
     });
+    fileInput.value = "";
+    fileInput.type = "";
+    fileInput.type = "file";
+    filePreview.classList.add("dp-none");
+    messageInput.classList.remove("dp-none");
   } else {
     const message = document.getElementById("message");
     if (message.value == "") return;
