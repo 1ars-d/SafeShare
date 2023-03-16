@@ -36,6 +36,7 @@
 #remaining-time {
   color: white;
   font-size: 22px;
+  margin-right: 5px;
 }
 
 .inputs {
@@ -242,4 +243,23 @@ input[type="file"] {
 
 .dp-none {
   display: none;
+}
+
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.top-action {
+  background-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-radius: 100px;
+}
+
+.top-action:hover {
+  background-color: rgba(0, 0, 0, 0.1);
 }
