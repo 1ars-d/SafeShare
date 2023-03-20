@@ -1,5 +1,9 @@
 var socketio = io();
 
+const chat = document.getElementById("chat");
+const fileDragOverlay = document.getElementById("file-drag-overlay");
+const fileDragInput = document.getElementById("drag-file-input");
+
 const messages = document.getElementById("messages");
 const fileInput = document.getElementById("file-select");
 const form = document.getElementById("message-form");
@@ -13,7 +17,7 @@ fileInput.addEventListener("change", (event) => {
   if (files.length) {
     filePreview.classList.remove("dp-none");
     messageInput.classList.add("dp-none");
-    filePreviewText.innerHTML = files[0].name;
+    filePreviewText.innerHTML = truncate(files[0].name, 20);
   } else {
     filePreview.classList.add("dp-none");
     messageInput.classList.remove("dp-none");
@@ -27,23 +31,15 @@ targetDate.setMinutes(targetDate.getMinutes() + closeTime);
 const countdown = document.getElementById("remaining-time");
 
 const setCountdown = () => {
-  // get the current date and time
   const currentDate = new Date();
-
-  // calculate the time remaining until the target date
   const timeRemaining = targetDate.getTime() - currentDate.getTime();
-
-  // calculate the number of days, hours, minutes, and seconds remaining
-  const days = Math.floor(timeRemaining / (1000 * 60 * 60 * 24));
-  const hours = Math.floor(
-    (timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-  );
   const minutes = Math.max(
     0,
     Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60))
   );
   const seconds = Math.max(0, Math.floor((timeRemaining % (1000 * 60)) / 1000));
 
+  // Check if room is expired
   /* if (minutes == 0 && seconds == 0) {
     window.location.replace("/");
   } */
@@ -128,6 +124,19 @@ socketio.on("message", (data) => {
   }
 });
 
+socketio.on("connect", (_) => {
+  addRecentRoom(roomCode, targetDateString);
+});
+
+const addRecentRoom = (code, timestampString) => {
+  const recentRooms = JSON.parse(localStorage.getItem("recent_rooms")) || {};
+
+  if (!recentRooms[code]) {
+    recentRooms[code] = [userName, timestampString];
+    localStorage.setItem("recent_rooms", JSON.stringify(recentRooms));
+  }
+};
+
 socketio.on("room_closed", (_) => {
   location.reload();
 });
@@ -160,4 +169,42 @@ const sendMessage = (event) => {
   message.blur();
 };
 
+const onClose = () => {
+  window.location.replace("/");
+};
+
 form.addEventListener("submit", sendMessage);
+
+chat.addEventListener("dragover", () => {
+  fileDragOverlay.classList.remove("dp-none");
+});
+
+fileDragOverlay.addEventListener("dragleave", () => {
+  fileDragOverlay.classList.add("dp-none");
+});
+
+fileDragInput.addEventListener("change", (_) => {
+  fileDragOverlay.classList.add("dp-none");
+  fileInput.files = fileDragInput.files;
+  var files = fileInput.files;
+  if (files.length) {
+    filePreview.classList.remove("dp-none");
+    messageInput.classList.add("dp-none");
+    filePreviewText.innerHTML = files[0].name;
+  } else {
+    filePreview.classList.add("dp-none");
+    messageInput.classList.remove("dp-none");
+  }
+});
+
+const clearFileInput = () => {
+  fileInput.value = "";
+  fileInput.type = "";
+  fileInput.type = "file";
+  filePreview.classList.add("dp-none");
+  messageInput.classList.remove("dp-none");
+};
+
+function truncate(str, n) {
+  return str.length > n ? str.slice(0, n - 1) + "&hellip;" : str;
+}

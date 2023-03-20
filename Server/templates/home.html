@@ -41,25 +41,26 @@
   </form>
   <div class="recent-rooms">
     <p class="recent-title">Your Recent Rooms</p>
-    <div class="room-list">
-      <div class="room-item">
-        <p class="room-item-label">ANBKD</p>
-        <p class="room-item-time">05:20</p>
-      </div>
-    </div>
+    <div class="room-list" id="recent-room-list"></div>
   </div>
 </div>
 <div class="usage">
   <h2>Usage</h2>
-  <p>
-    This app lets you create private chat rooms to transfer texts and files
-    between devices.
-  </p>
-  <p>
-    These rooms are only temporary and will be deleted after a certain amount of
-    time.
-  </p>
+  <div class="usage-text">
+    <p class="primary-color">
+      Choose a username and create a new room. Share the code for others to
+      join.
+    </p>
+    <p>
+      The chat allows you to share texts and files up to
+      <span class="primary-blue">50mb</span>. The rooms are only temporary and
+      will be deleted after a certain amount of time.
+    </p>
+  </div>
   <button class="text-button create-now">Create now ➔</button>
 </div>
-
+<script
+  type="text/javascript"
+  src="{{url_for('static', filename='js/home.js')}}"
+></script>
 {%endblock%}

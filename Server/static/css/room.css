@@ -123,7 +123,7 @@
   display: flex;
   align-items: center;
   font-size: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.132);
+  border: 1px solid var(--main-color);
   background-color: white;
 }
 
@@ -183,7 +183,7 @@
   } */
 }
 
-input[type="file"] {
+#file-select {
   opacity: 0;
   z-index: -1;
   position: absolute;
@@ -242,7 +242,7 @@ input[type="file"] {
 }
 
 .dp-none {
-  display: none;
+  display: none !important;
 }
 
 .top-right {
@@ -262,4 +262,56 @@ input[type="file"] {
 
 .top-action:hover {
   background-color: rgba(0, 0, 0, 0.1);
+}
+
+.file-drag-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #51a57e1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drag-file-label {
+  padding-bottom: 80px;
+  width: 100%;
+  height: 100%;
+  border: 6px solid var(--main-color);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  color: rgba(0, 0, 0, 0.6);
+  font-weight: 500;
+}
+
+#drag-file-input {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.drop-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 40px;
+  padding-bottom: 30px;
+  border: 3px dashed var(--main-color);
+  border-radius: 4px;
+}
+
+#btn-dismiss-file {
+  margin-left: 10px;
 }

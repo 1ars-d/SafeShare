@@ -2,11 +2,10 @@ from flask import Flask, render_template, session, request, redirect, url_for
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
 import datetime
 import sqlite3
-import time
 from apscheduler.schedulers.background import BackgroundScheduler
 import base64
 
-from utilities import generate_unique_code, room_exists, setup_db
+from utilities import generate_unique_code, room_exists, setup_db, check_rooms
 
 MAX_BUFFER_SIZE = 50 * 1000 * 1000  # 50 MB
 
@@ -20,26 +19,7 @@ socketio = SocketIO(app, max_http_buffer_size=MAX_BUFFER_SIZE)
 # DB Setup
 setup_db()
 
-# Delete old Rooms
-
-
-def check_rooms():
-    """ conn = sqlite3.connect("ROOMS_db.sqlite")
-    cur = conn.cursor()
-    due_time = (datetime.datetime.now() -
-                datetime.timedelta(seconds=60)).isoformat()
-    cur.execute(f'SELECT code FROM rooms WHERE timestamp < "{due_time}"')
-    results = cur.fetchall()
-    for code in results:
-        cur.execute(f'DELETE FROM rooms WHERE code="{code[0]}"')
-        cur.execute(f'DELETE FROM messages WHERE room="{code[0]}"')
-        cur.execute(f'DELETE FROM logs WHERE room="{code[0]}"')
-        cur.execute(f'DELETE FROM files WHERE room="{code[0]}"')
-        socketio.emit("room_closed", {}, to=code[0])
-    conn.commit()
-    conn.close() """
-
-
+# Setup deleting old rooms
 sched = BackgroundScheduler(daemon=True)
 sched.add_job(check_rooms, 'interval', seconds=10)
 sched.start()
@@ -67,13 +47,20 @@ def home():
             room = generate_unique_code(5)
             timestamp = datetime.datetime.now().isoformat()
             cur.execute(
-                "INSERT INTO rooms(code, members, timestamp) VALUES(?,?,?)", (room, 0, timestamp))
+                "INSERT INTO rooms(code, timestamp) VALUES(?,?)", (room, timestamp))
             conn.commit()
-            conn.close()
             print("Created a new room with code:", room)
         # Room doesn't exist
         elif not room_exists(room):
             return render_template("home.html", error="Room does not exist.", code=code, name=name)
+        name_exists = cur.execute(
+            f'SELECT COUNT(1) FROM users WHERE room="{room}" AND name="{name}"').fetchone()[0] != 0
+        if name_exists:
+            return render_template("home.html", error="This username already exists in this room", code=code, name=name)
+        cur.execute(
+            f'INSERT into users (name, room) VALUES(?,?)', (name, room))
+        conn.commit()
+        conn.close()
         session["room"] = room
         session["name"] = name
         return redirect(url_for("room"))
@@ -91,22 +78,37 @@ def room():
     return render_template("room.html", room=room, history=history, timestamp=timestamp, name=name)
 
 
+@app.route('/join/<string:room>/<string:name>/<string:user_id>')
+def join(room, name, user_id):
+    if not room_exists(room):
+        return redirect(url_for("home"))
+    conn = sqlite3.connect("ROOMS_db.sqlite")
+    cur = conn.cursor()
+    name_entry = cur.execute(
+        f'SELECT id FROM users WHERE room="{room}" AND name="{name}"').fetchone()
+    if name_entry and user_id != str(name_entry[0]):
+        return render_template("home.html", error="This username already exists in this room")
+    if not name_entry:
+        cur.execute(
+            f'INSERT into users (name, room) VALUES(?,?)', (name, room))
+    conn.commit()
+    conn.close()
+    session["room"] = room
+    session["name"] = name
+    return redirect(url_for("room"))
+
+
 @socketio.on("connect")
 def connect(_):
     room = session.get("room")
     name = session.get("name")
     conn = sqlite3.connect("ROOMS_db.sqlite")
-    cur = conn.cursor()
     if not room or not name:
         return
     if not room_exists(room):
         leave_room(room)
         return
     join_room(room)
-    cur.execute(
-        f'UPDATE rooms SET members = members + 1 WHERE code = "{room}"')
-    conn.commit()
-    conn.close()
     send_log(f"{name} joined the room.", room)
     print(f"{name} joined room {room}")
 
@@ -116,12 +118,6 @@ def disconnect():
     room = session.get("room")
     name = session.get("name")
     leave_room(room)
-    conn = sqlite3.connect("ROOMS_db.sqlite")
-    cur = conn.cursor()
-    cur.execute(
-        f'UPDATE rooms SET members = members - 1 WHERE code = "{room}"')
-    conn.commit()
-    conn.close()
     send_log(f"{name} left the room.", room)
     print(f"{name} left the room {room}")
 
