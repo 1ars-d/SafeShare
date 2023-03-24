@@ -60,9 +60,12 @@ def home():
         cur.execute(
             f'INSERT into users (name, room) VALUES(?,?)', (name, room))
         conn.commit()
+        user_id = cur.execute(
+            f'SELECT id FROM users WHERE room="{room}" AND name="{name}"').fetchone()[0]
         conn.close()
         session["room"] = room
         session["name"] = name
+        session["user_id"] = user_id
         return redirect(url_for("room"))
     return render_template("home.html", name="", code="")
 
@@ -71,11 +74,27 @@ def home():
 def room():
     room = session.get("room")
     name = session.get("name")
+    user_id = session.get("user_id")
     if not room_exists(room):
         return redirect(url_for("home"))
+    conn = sqlite3.connect("ROOMS_db.sqlite")
+    cur = conn.cursor()
+    members = cur.execute(
+        f'SELECT name FROM users WHERE room="{room}"').fetchall()
+    output_members = []
+    for member in members:
+        output_members.append(member[0])
+    conn.close()
     timestamp = get_room_timestamp(room)
     history = get_history(room)
-    return render_template("room.html", room=room, history=history, timestamp=timestamp, name=name)
+    return render_template("room.html", room=room, history=history, timestamp=timestamp, name=name, user_id=user_id, members=output_members)
+
+
+@app.route('/join/<string:room>')
+def join_form(room):
+    if not room_exists(room):
+        return redirect(url_for("home"))
+    return render_template("join.html", room=room)
 
 
 @app.route('/join/<string:room>/<string:name>/<string:user_id>')
@@ -87,14 +106,17 @@ def join(room, name, user_id):
     name_entry = cur.execute(
         f'SELECT id FROM users WHERE room="{room}" AND name="{name}"').fetchone()
     if name_entry and user_id != str(name_entry[0]):
-        return render_template("home.html", error="This username already exists in this room")
+        return render_template("join.html", error="This username already exists in this room", room=room)
     if not name_entry:
         cur.execute(
             f'INSERT into users (name, room) VALUES(?,?)', (name, room))
     conn.commit()
+    user_id = cur.execute(
+        f'SELECT id FROM users WHERE room="{room}" AND name="{name}"').fetchone()[0]
     conn.close()
     session["room"] = room
     session["name"] = name
+    session["user_id"] = user_id
     return redirect(url_for("room"))
 
 
@@ -102,7 +124,6 @@ def join(room, name, user_id):
 def connect(_):
     room = session.get("room")
     name = session.get("name")
-    conn = sqlite3.connect("ROOMS_db.sqlite")
     if not room or not name:
         return
     if not room_exists(room):

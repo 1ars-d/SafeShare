@@ -1,0 +1,20 @@
+{% extends 'base.html' %} {% block content %} {%if error %}
+<div class="error">{{error}}</div>
+{% endif %}
+<div class="join-container">
+  <div class="card">
+    <p>Join room <span class="primary-color">#{{room}}</span></p>
+    <div class="join-form">
+      <input placeholder="Username" id="name" />
+      <button name="join" id="join">Join</button>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+  const room = "{{room}}";
+</script>
+<script
+  type="text/javascript"
+  src="{{url_for('static', filename='js/join.js')}}"
+></script>
+{%endblock%}

@@ -315,3 +315,52 @@
 #btn-dismiss-file {
   margin-left: 10px;
 }
+
+.members-popup {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  top: 70px;
+  right: 50px;
+  background-color: white;
+  font-size: 17px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  padding: 10px;
+  border-radius: 3px;
+  color: var(--text-color);
+  min-width: 200px;
+  text-align: left;
+  pointer-events: none;
+}
+
+.members-popup h3 {
+  margin-bottom: 10px;
+}
+
+.qr-popup {
+  position: absolute;
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  top: 70px;
+  left: 20px;
+  background-color: white;
+  font-size: 17px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  padding: 10px;
+  border-radius: 3px;
+  color: var(--text-color);
+  min-width: 200px;
+  text-align: left;
+  pointer-events: none;
+}
+
+.room-header-code {
+  user-select: none;
+  cursor: default;
+}
+
+.room-header-code:hover .qr-popup {
+  display: flex;
+}

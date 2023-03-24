@@ -4,7 +4,7 @@ const getRecentRooms = () => {
   const recentRooms = JSON.parse(localStorage.getItem("recent_rooms")) || {};
   for (var key in recentRooms) {
     const closeTime = 1; // in minutes
-    const targetDate = new Date(recentRooms[key][1]);
+    const targetDate = new Date(recentRooms[key][2]);
     targetDate.setMinutes(targetDate.getMinutes() + closeTime);
     const currentDate = new Date();
     const timeRemaining = targetDate.getTime() - currentDate.getTime();
@@ -25,7 +25,8 @@ const getRecentRooms = () => {
     })}:${seconds.toLocaleString(undefined, {
       minimumIntegerDigits: 2,
     })}`;
-    recentRoomList.innerHTML += `<a class="room-item" href="/join/${key}/${recentRooms[key][0]}">
+    const link = `/join/${key}/${recentRooms[key][0]}/${recentRooms[key][1]}`;
+    recentRoomList.innerHTML += `<a class="room-item" href="${link}" >
         <p class="room-item-label">${key}</p>
         <p class="room-item-time" id="${key}-time">${minuteString}</p>
     </a>`;

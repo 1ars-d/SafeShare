@@ -4,6 +4,8 @@ const chat = document.getElementById("chat");
 const fileDragOverlay = document.getElementById("file-drag-overlay");
 const fileDragInput = document.getElementById("drag-file-input");
 
+const membersButton = document.getElementById("btn-members");
+const membersPopup = document.getElementById("members-popup");
 const messages = document.getElementById("messages");
 const fileInput = document.getElementById("file-select");
 const form = document.getElementById("message-form");
@@ -11,6 +13,12 @@ const form = document.getElementById("message-form");
 const messageInput = document.getElementById("message");
 const filePreview = document.getElementById("file-preview");
 const filePreviewText = document.getElementById("file-preview-text");
+
+// create qr code
+new QRCode(
+  document.getElementById("qr-code"),
+  `${window.location.origin}/join/${roomCode}`
+);
 
 fileInput.addEventListener("change", (event) => {
   var files = fileInput.files;
@@ -132,7 +140,7 @@ const addRecentRoom = (code, timestampString) => {
   const recentRooms = JSON.parse(localStorage.getItem("recent_rooms")) || {};
 
   if (!recentRooms[code]) {
-    recentRooms[code] = [userName, timestampString];
+    recentRooms[code] = [userName, userId, timestampString];
     localStorage.setItem("recent_rooms", JSON.stringify(recentRooms));
   }
 };
@@ -205,6 +213,18 @@ const clearFileInput = () => {
   messageInput.classList.remove("dp-none");
 };
 
-function truncate(str, n) {
+const truncate = (str, n) => {
   return str.length > n ? str.slice(0, n - 1) + "&hellip;" : str;
-}
+};
+
+const addMemberItem = (name) => {
+  membersPopup.innerHTML += `<p class="${
+    name == userName ? "primary-color" : ""
+  }">
+    ${name}
+  </p>`;
+};
+
+membersButton.addEventListener("click", () => {
+  membersPopup.classList.toggle("dp-none");
+});

@@ -18,7 +18,10 @@
     </label>
   </div>
   <div class="room-header">
-    <h2><span class="room-code"># {{room}}</span></h2>
+    <h2 class="room-header-code">
+      <div class="qr-popup" id="qr-code"></div>
+      <span class="room-code"># {{room}}</span>
+    </h2>
     <div class="top-right">
       <h2><span id="remaining-time"></span></h2>
       <button id="btn-close" class="top-action" onclick="onClose()">
@@ -39,6 +42,9 @@
         </svg>
       </button>
       <button id="btn-members" class="top-action">
+        <div class="members-popup dp-none" id="members-popup">
+          <h3>Members</h3>
+        </div>
         <svg
           version="1.1"
           height="22px"
@@ -157,13 +163,17 @@
   const roomCode = "{{room}}";
   const targetDateString = "{{timestamp[0]}}";
   const userName = "{{name}}";
+  const userId = "{{user_id}}";
 </script>
 <script
   type="text/javascript"
   src="{{url_for('static', filename='js/room.js')}}"
 ></script>
-
-{% for element in history %}
+{% for member in members %}
+<script type="text/javascript">
+  addMemberItem("{{member}}");
+</script>
+{% endfor %} {% for element in history %}
 <script type="text/javascript">
   // Get History from backend
   if ("{{element.type}}" == "message") {
