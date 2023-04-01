@@ -1,5 +1,8 @@
+import datetime
+from flask_socketio import emit
 import sqlite3
 from string import ascii_uppercase
+from CONSTANTS import REMOVE_ROOM_AFTER
 import random
 
 
@@ -48,11 +51,10 @@ def setup_db():
 
 
 def check_rooms():
-    pass
-    """ conn = sqlite3.connect("ROOMS_db.sqlite")
+    conn = sqlite3.connect("ROOMS_db.sqlite")
     cur = conn.cursor()
     due_time = (datetime.datetime.now() -
-                datetime.timedelta(seconds=60)).isoformat()
+                datetime.timedelta(minutes=REMOVE_ROOM_AFTER)).isoformat()
     cur.execute(f'SELECT code FROM rooms WHERE timestamp < "{due_time}"')
     results = cur.fetchall()
     for code in results:
@@ -60,6 +62,5 @@ def check_rooms():
         cur.execute(f'DELETE FROM messages WHERE room="{code[0]}"')
         cur.execute(f'DELETE FROM logs WHERE room="{code[0]}"')
         cur.execute(f'DELETE FROM files WHERE room="{code[0]}"')
-        socketio.emit("room_closed", {}, to=code[0])
     conn.commit()
-    conn.close() """
+    conn.close()

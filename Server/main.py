@@ -1,13 +1,12 @@
 from flask import Flask, render_template, session, request, redirect, url_for
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
+from CONSTANTS import REMOVE_ROOM_AFTER, MAX_BUFFER_SIZE
 import datetime
 import sqlite3
 from apscheduler.schedulers.background import BackgroundScheduler
 import base64
 
 from utilities import generate_unique_code, room_exists, setup_db, check_rooms
-
-MAX_BUFFER_SIZE = 50 * 1000 * 1000  # 50 MB
 
 # Server Setup
 app = Flask(__name__)
@@ -87,7 +86,7 @@ def room():
     conn.close()
     timestamp = get_room_timestamp(room)
     history = get_history(room)
-    return render_template("room.html", room=room, history=history, timestamp=timestamp, name=name, user_id=user_id, members=output_members)
+    return render_template("room.html", room=room, history=history, timestamp=timestamp, name=name, user_id=user_id, members=output_members, close_time=REMOVE_ROOM_AFTER)
 
 
 @app.route('/join/<string:room>')

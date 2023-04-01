@@ -251,6 +251,12 @@
   gap: 5px;
 }
 
+.top-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
 .top-action {
   background-color: transparent;
   display: flex;
@@ -361,6 +367,13 @@
   cursor: default;
 }
 
-.room-header-code:hover .qr-popup {
+#btn-qr:hover .qr-popup {
   display: flex;
+}
+
+.qr-popup p {
+  font-weight: 600;
+  font-size: 22px;
+  padding: 10px;
+  text-align: center;
 }

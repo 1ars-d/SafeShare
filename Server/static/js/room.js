@@ -4,6 +4,8 @@ const chat = document.getElementById("chat");
 const fileDragOverlay = document.getElementById("file-drag-overlay");
 const fileDragInput = document.getElementById("drag-file-input");
 
+const error = document.getElementById("error");
+
 const membersButton = document.getElementById("btn-members");
 const membersPopup = document.getElementById("members-popup");
 const messages = document.getElementById("messages");
@@ -16,12 +18,21 @@ const filePreviewText = document.getElementById("file-preview-text");
 
 // create qr code
 new QRCode(
-  document.getElementById("qr-code"),
+  document.getElementById("qr-image"),
   `${window.location.origin}/join/${roomCode}`
 );
 
 fileInput.addEventListener("change", (event) => {
   var files = fileInput.files;
+  var fileSizeMB = files[0].size / 1024 ** 2;
+  if (fileSizeMB > 50) {
+    error.innerHTML = "Cannot upload files larger than 50mb";
+    error.classList.remove("dp-none");
+    fileInput.value = "";
+    fileInput.type = "";
+    fileInput.type = "file";
+    return;
+  }
   if (files.length) {
     filePreview.classList.remove("dp-none");
     messageInput.classList.add("dp-none");
@@ -33,7 +44,6 @@ fileInput.addEventListener("change", (event) => {
 });
 
 // Room Countdown
-const closeTime = 1; // in minutes
 const targetDate = new Date(targetDateString);
 targetDate.setMinutes(targetDate.getMinutes() + closeTime);
 const countdown = document.getElementById("remaining-time");
@@ -48,9 +58,9 @@ const setCountdown = () => {
   const seconds = Math.max(0, Math.floor((timeRemaining % (1000 * 60)) / 1000));
 
   // Check if room is expired
-  /* if (minutes == 0 && seconds == 0) {
+  if (minutes == 0 && seconds == 0) {
     window.location.replace("/");
-  } */
+  }
 
   // display the countdown
   countdown.innerHTML = `${minutes.toLocaleString(undefined, {
@@ -145,10 +155,6 @@ const addRecentRoom = (code, timestampString) => {
   }
 };
 
-socketio.on("room_closed", (_) => {
-  location.reload();
-});
-
 socketio.on("log", (data) => {
   createLog(data.log, data.timestamp);
 });
@@ -195,6 +201,15 @@ fileDragInput.addEventListener("change", (_) => {
   fileDragOverlay.classList.add("dp-none");
   fileInput.files = fileDragInput.files;
   var files = fileInput.files;
+  var fileSizeMB = files[0].size / 1024 ** 2;
+  if (fileSizeMB > 50) {
+    error.innerHTML = "Cannot upload files larger than 50mb";
+    error.classList.remove("dp-none");
+    fileInput.value = "";
+    fileInput.type = "";
+    fileInput.type = "file";
+    return;
+  }
   if (files.length) {
     filePreview.classList.remove("dp-none");
     messageInput.classList.add("dp-none");
