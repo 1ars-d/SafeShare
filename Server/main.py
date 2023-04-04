@@ -1,11 +1,17 @@
-from flask import Flask, render_template, session, request, redirect, url_for
+from ctypes import create_string_buffer
+import io
+from flask import Flask, render_template, session, request, redirect, url_for, abort, send_file
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from CONSTANTS import REMOVE_ROOM_AFTER, MAX_BUFFER_SIZE
 import datetime
 import sqlite3
 from apscheduler.schedulers.background import BackgroundScheduler
 import base64
-
+import shortuuid
+from skimage import data, color
+from skimage.transform import rescale, resize, downscale_local_mean
+import numpy as np
+from PIL import Image
 from utilities import generate_unique_code, room_exists, setup_db, check_rooms
 
 # Server Setup
@@ -119,6 +125,34 @@ def join(room, name, user_id):
     return redirect(url_for("room"))
 
 
+@app.route('/file/<string:file_id>')
+def download_file(file_id):
+    conn = sqlite3.connect("ROOMS_db.sqlite")
+    cur = conn.cursor()
+    file = cur.execute(
+        f'SELECT data, file_type, file_name FROM files WHERE id="{file_id}"').fetchone()
+    if not file:
+        return abort(400, "Record not found")
+    conn.close()
+    data = io.BytesIO(base64.b64decode(file[0]))
+    return send_file(
+        data,
+        as_attachment=True,
+        attachment_filename=file[2],
+        mimetype=file[1]
+    )
+
+
+def downscale_image(image_data, format, factor):
+    raw = Image.open(io.BytesIO(base64.b64decode(image_data)))
+    image_rescaled = raw.resize(
+        (int(raw.size[0] * factor), int(raw.size[1] * factor)))
+    buffered = io.BytesIO()
+    image_rescaled.save(buffered, format=format)
+    buffered.seek(0)
+    return buffered
+
+
 @socketio.on("connect")
 def connect(_):
     room = session.get("room")
@@ -153,7 +187,7 @@ def message(data):
     timestamp = datetime.datetime.now().isoformat()
     if data["type"] == "file":
         cur.execute(
-            "INSERT INTO files(data, file_type, file_name, author, room, timestamp) VALUES(?,?,?,?,?,?)", (base64.b64encode(data["data"]), data["fileType"], data["fileName"], name, room, timestamp))
+            "INSERT INTO files(data, file_type, file_name, author, room, timestamp, id) VALUES(?,?,?,?,?,?,?)", (base64.b64encode(data["data"]), data["fileType"], data["fileName"], name, room, timestamp, shortuuid.uuid()))
         conn.commit()
         emit("message", {"name": name, "data": data["data"],
                          "timestamp": timestamp, "type": "file", "fileType": data["fileType"], "fileName": data["fileName"]}, to=room)
@@ -199,7 +233,10 @@ def get_history(room):
     files = cur.execute(
         f'SELECT data, file_type, file_name, author, room, timestamp FROM files WHERE room="{room}"').fetchall()
     for file in files:
-        history.append({"content": file[0].decode("utf-8"), "fileType": file[1],
+        content = ""
+        if (file[1].split("/")[0] == "image"):
+            content = downscale_image(file[0], file[1].split("/")[1], .1)
+        history.append({"content": content, "fileType": file[1],
                        "fileName": file[2], "timestamp": file[5], "type": "file", "author": file[3]})
     logs = cur.execute(
         f'SELECT content, timestamp, room FROM logs WHERE room="{room}"').fetchall()
@@ -211,4 +248,4 @@ def get_history(room):
 
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True, host="192.168.178.57")
+    socketio.run(app, debug=True)

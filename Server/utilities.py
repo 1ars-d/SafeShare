@@ -43,7 +43,7 @@ def setup_db():
         cur.execute(
             'CREATE TABLE logs (content TEXT, timestamp TEXT, room TEXT)')
         cur.execute(
-            'CREATE TABLE files (data TEXT, file_type TEXT, file_name TEXT, author TEXT, room TEXT, timestamp TEXT)')
+            'CREATE TABLE files (data TEXT, file_type TEXT, file_name TEXT, author TEXT, room TEXT, timestamp TEXT, id TEXT)')
         cur.execute(
             'CREATE TABLE users (name TEXT, id integer primary key, room TEXT)')
     conn.commit()
@@ -51,7 +51,7 @@ def setup_db():
 
 
 def check_rooms():
-    conn = sqlite3.connect("ROOMS_db.sqlite")
+    """ conn = sqlite3.connect("ROOMS_db.sqlite")
     cur = conn.cursor()
     due_time = (datetime.datetime.now() -
                 datetime.timedelta(minutes=REMOVE_ROOM_AFTER)).isoformat()
@@ -63,4 +63,4 @@ def check_rooms():
         cur.execute(f'DELETE FROM logs WHERE room="{code[0]}"')
         cur.execute(f'DELETE FROM files WHERE room="{code[0]}"')
     conn.commit()
-    conn.close()
+    conn.close() """
