@@ -1,5 +1,5 @@
-from ctypes import create_string_buffer
 import io
+import sys
 from flask import Flask, render_template, session, request, redirect, url_for, abort, send_file
 from flask_socketio import SocketIO, join_room, leave_room, send, emit
 from CONSTANTS import REMOVE_ROOM_AFTER, MAX_BUFFER_SIZE
@@ -8,11 +8,8 @@ import sqlite3
 from apscheduler.schedulers.background import BackgroundScheduler
 import base64
 import shortuuid
-from skimage import data, color
-from skimage.transform import rescale, resize, downscale_local_mean
-import numpy as np
 from PIL import Image
-from utilities import generate_unique_code, room_exists, setup_db, check_rooms
+from utilities import generate_unique_code, room_exists, setup_db, check_rooms, get_base64_size
 
 # Server Setup
 app = Flask(__name__)
@@ -187,15 +184,20 @@ def message(data):
     timestamp = datetime.datetime.now().isoformat()
     if data["type"] == "file":
         fileId = shortuuid.uuid()
+        width = 0
+        height = 0
+        if (data["fileType"].split("/")[0] == "image"):
+            width = Image.open(io.BytesIO(data["data"])).width
+            height = Image.open(io.BytesIO(data["data"])).height
         cur.execute(
-            "INSERT INTO files(data, file_type, file_name, author, room, timestamp, id) VALUES(?,?,?,?,?,?,?)", (base64.b64encode(data["data"]), data["fileType"], data["fileName"], name, room, timestamp, fileId))
+            "INSERT INTO files(data, file_type, file_name, author, room, timestamp, id, width, height) VALUES(?,?,?,?,?,?,?,?,?)", (base64.b64encode(data["data"]), data["fileType"], data["fileName"], name, room, timestamp, fileId, width, height))
         conn.commit()
         content = ""
         if (data["fileType"].split("/")[0] == "image"):
             content = downscale_image(
                 data["data"], data["fileType"].split("/")[1], .1).read()
         emit("message", {"name": name, "data": content,
-                         "timestamp": timestamp, "type": "file", "fileType": data["fileType"], "fileName": data["fileName"], "fileId": fileId}, to=room)
+                         "timestamp": timestamp, "type": "file", "fileType": data["fileType"], "fileName": data["fileName"], "fileId": fileId, "fileSize": sys.getsizeof(data["data"]), "imageWidth": width, "imageHeight": height}, to=room)
     if data["type"] == "text":
         content = data["data"]
         cur.execute(
@@ -236,18 +238,18 @@ def get_history(room):
         history.append(
             {"content": message[0], "content_type": message[1], "author": message[2], "timestamp": message[4], "type": "message"})
     files = cur.execute(
-        f'SELECT data, file_type, file_name, author, room, timestamp, id FROM files WHERE room="{room}"').fetchall()
+        f'SELECT data, file_type, file_name, author, room, timestamp, id, width, height FROM files WHERE room="{room}"').fetchall()
     for file in files:
         content = ""
         if (file[1].split("/")[0] == "image"):
             content = base64.b64encode(downscale_image(base64.b64decode(
                 file[0].decode()), file[1].split("/")[1], .1).getvalue()).decode("utf-8")
         history.append({"content": content, "fileType": file[1],
-                       "fileName": file[2], "timestamp": file[5], "type": "file", "author": file[3], "fileId": file[6]})
-    logs = cur.execute(
+                       "fileName": file[2], "timestamp": file[5], "type": "file", "author": file[3], "fileId": file[6],  "fileSize": get_base64_size(file[0]), "imageWidth": file[7], "imageHeight": file[8]})
+    """ logs = cur.execute(
         f'SELECT content, timestamp, room FROM logs WHERE room="{room}"').fetchall()
     for log in logs:
-        history.append({"content": log[0], "timestamp": log[1], "type": "log"})
+        history.append({"content": log[0], "timestamp": log[1], "type": "log"}) """
     history.sort(key=lambda x: x["timestamp"])
     conn.close()
     return history

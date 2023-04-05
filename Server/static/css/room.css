@@ -345,6 +345,7 @@
 
 .qr-popup {
   position: absolute;
+  z-index: 10000;
   display: none;
   flex-direction: column;
   gap: 5px;
@@ -364,6 +365,14 @@
 .room-header-code {
   user-select: none;
   cursor: default;
+}
+
+#btn-qr {
+  z-index: 1000000;
+}
+
+#btn-qr:hover {
+  opacity: 1s;
 }
 
 #btn-qr:hover .qr-popup {

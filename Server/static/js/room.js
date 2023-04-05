@@ -6,9 +6,9 @@ const fileDragInput = document.getElementById("drag-file-input");
 
 const error = document.getElementById("error");
 
+const messages = document.getElementById("messages");
 const membersButton = document.getElementById("btn-members");
 const membersPopup = document.getElementById("members-popup");
-const messages = document.getElementById("messages");
 const fileInput = document.getElementById("file-select");
 const form = document.getElementById("message-form");
 
@@ -88,63 +88,47 @@ const createMessage = (name, message, timestamp) => {
   messages.scrollTop = messages.scrollHeight;
 };
 
-const getImageDimensions = (url) => {
-  const img = new Image();
-  img.src = url;
-  return new Promise((resolve, reject) => {
-    img.onload = () => {
-      const { naturalWidth, naturalHeight } = img;
-      resolve({ width: naturalWidth, height: naturalHeight });
-    };
-    img.onerror = () => {
-      reject(new Error(`Failed to load image: ${url}`));
-    };
-  });
-};
-
 const createFileItem = (
   name,
   src,
   fileType,
   fileName,
   timestamp,
-  download_id
+  download_id,
+  file_size, // in bytes
+  width,
+  height
 ) => {
   const date = new Date(timestamp).toDateString();
   let content;
   if (fileType.split("/")[0] == "image") {
     const availableWidth = messages.clientWidth;
     const availableHeight = messages.clientHeight;
-    getImageDimensions(src).then(({ width, height }) => {
-      console.log(width, height);
-      let imgWidth = 0;
-      let imgHeight = 0;
-      if (width > height) {
-        imgWidth = Math.min(availableWidth / 2, 350);
-      } else {
-        imgHeight = Math.min(availableHeight / 2, 150);
-      }
-      content = `
+    imgWidth = 0;
+    imgHeight = 0;
+    if (parseInt(width) > parseInt(height)) {
+      imgWidth = Math.min(availableWidth / 2, 350);
+    } else {
+      imgHeight = Math.min(availableHeight / 2, 300);
+    }
+    content = `
       <div class="message-item ${userName == name ? "message-item-self" : ""}">
         <div class="message-info">
           <p class="message-name">${name}</p>
           <p class="message-time">${date}</p>
         </div>
         <div class="file-container image-container">
-          <a href="/file/${download_id}" style="padding: 0"><img src="${src}" alt="${fileName}" ${
-        imgWidth > 0 ? `width="${imgWidth}"` : ""
-      } ${imgHeight > 0 ? `width="${imgHeight}"` : ""} />
+          <a href="/file/${download_id}" target="_blank" style="padding: 0"><img src="${src}" alt="${fileName}" ${
+      imgWidth > 0 ? `width="${imgWidth}"` : ""
+    } ${imgHeight > 0 ? `height="${imgHeight}"` : ""} />
       <div class="btn-img-download">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="white">
-  <path d="M17 12v5H3v-5H1v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5z"/>
-  <path d="M10 15l5-6h-4V1H9v8H5l5 6z"/>
-</svg><p>400 kB</p></div></a>
+      <path d="M17 12v5H3v-5H1v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5z"/>
+      <path d="M10 15l5-6h-4V1H9v8H5l5 6z"/>
+      </svg><p>${formatBytes(file_size)}</p></div></a>
         </div>
       </div>
       `;
-      messages.innerHTML += content;
-      messages.scrollTop = messages.scrollHeight;
-    });
   } else {
     content = `
       <div class="message-item ${userName == name ? "message-item-self" : ""}">
@@ -153,16 +137,28 @@ const createFileItem = (
           <p class="message-time">${date}</p>
         </div>
         <div class="file-container">
-          <a href="/file/${download_id}" class="file-download"><svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 30 30" width="30px" height="30px" fill="${
+          <a href="/file/${download_id}" target="_blank" class="file-download"><svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 30 30" width="30px" height="30px" fill="${
       name == userName ? "white" : "#04be8c"
     }">    <path d="M24.707,8.793l-6.5-6.5C18.019,2.105,17.765,2,17.5,2H7C5.895,2,5,2.895,5,4v22c0,1.105,0.895,2,2,2h16c1.105,0,2-0.895,2-2 V9.5C25,9.235,24.895,8.981,24.707,8.793z M18,10c-0.552,0-1-0.448-1-1V3.904L23.096,10H18z"/></svg><p>${fileName}</p></a>
         </div>
       </div>
       `;
-    messages.innerHTML += content;
-    messages.scrollTop = messages.scrollHeight;
   }
+  messages.innerHTML += content;
+  messages.scrollTop = messages.scrollHeight;
 };
+
+function formatBytes(bytes) {
+  if (bytes < 1024) {
+    return bytes + " bytes";
+  } else if (bytes < 1048576) {
+    return (bytes / 1024).toFixed(2) + " KB";
+  } else if (bytes < 1073741824) {
+    return (bytes / 1048576).toFixed(2) + " MB";
+  } else {
+    return (bytes / 1073741824).toFixed(2) + " GB";
+  }
+}
 
 const createLog = (log, timestamp) => {
   //const content = `<div class="log-item">${log} (${timestamp})</div>`;
@@ -181,7 +177,10 @@ socketio.on("message", (data) => {
       data.fileType,
       data.fileName,
       data.timestamp,
-      data.fileId
+      data.fileId,
+      data.fileSize,
+      data.imageWidth,
+      data.imageHeight
     );
   }
 });

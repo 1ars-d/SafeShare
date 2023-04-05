@@ -223,11 +223,11 @@
     createMessage(
       "{{element.author}}",
       "{{element.content}}",
-      "{{element.timestamp}}"
+      "{{element.timestamp}}",
+      false
     );
   } else if ("{{element.type}}" == "file") {
     var str = "{{element.content}}";
-    console.log(str);
     var base64String = "data:{{element.fileType}};base64," + str;
     createFileItem(
       "{{element.author}}",
@@ -235,7 +235,10 @@
       "{{element.fileType}}",
       "{{element.fileName}}",
       "{{element.timestamp}}",
-      "{{element.fileId}}"
+      "{{element.fileId}}",
+      "{{element.fileSize}}",
+      "{{element.imageWidth}}",
+      "{{element.imageHeight}}"
     );
   } else if ("{{element.type}}" == "log") {
     createLog("{{element.content}}", "{{element.timestamp}}");

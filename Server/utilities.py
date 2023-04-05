@@ -1,4 +1,6 @@
+import base64
 import datetime
+import sys
 from flask_socketio import emit
 import sqlite3
 from string import ascii_uppercase
@@ -43,11 +45,17 @@ def setup_db():
         cur.execute(
             'CREATE TABLE logs (content TEXT, timestamp TEXT, room TEXT)')
         cur.execute(
-            'CREATE TABLE files (data TEXT, file_type TEXT, file_name TEXT, author TEXT, room TEXT, timestamp TEXT, id TEXT)')
+            'CREATE TABLE files (data TEXT, file_type TEXT, file_name TEXT, author TEXT, room TEXT, timestamp TEXT, id TEXT, width INTEGER, height INTEGER)')
         cur.execute(
             'CREATE TABLE users (name TEXT, id integer primary key, room TEXT)')
     conn.commit()
     conn.close()
+
+
+def get_base64_size(base64_string):
+    decoded = base64.b64decode(base64_string)
+    size_in_bytes = sys.getsizeof(decoded)
+    return size_in_bytes
 
 
 def check_rooms():
