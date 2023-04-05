@@ -144,7 +144,7 @@ def download_file(file_id):
 
 
 def downscale_image(image_data, format, factor):
-    raw = Image.open(io.BytesIO(base64.b64decode(image_data)))
+    raw = Image.open(io.BytesIO(image_data))
     image_rescaled = raw.resize(
         (int(raw.size[0] * factor), int(raw.size[1] * factor)))
     buffered = io.BytesIO()
@@ -186,11 +186,16 @@ def message(data):
     cur = conn.cursor()
     timestamp = datetime.datetime.now().isoformat()
     if data["type"] == "file":
+        fileId = shortuuid.uuid()
         cur.execute(
-            "INSERT INTO files(data, file_type, file_name, author, room, timestamp, id) VALUES(?,?,?,?,?,?,?)", (base64.b64encode(data["data"]), data["fileType"], data["fileName"], name, room, timestamp, shortuuid.uuid()))
+            "INSERT INTO files(data, file_type, file_name, author, room, timestamp, id) VALUES(?,?,?,?,?,?,?)", (base64.b64encode(data["data"]), data["fileType"], data["fileName"], name, room, timestamp, fileId))
         conn.commit()
-        emit("message", {"name": name, "data": data["data"],
-                         "timestamp": timestamp, "type": "file", "fileType": data["fileType"], "fileName": data["fileName"]}, to=room)
+        content = ""
+        if (data["fileType"].split("/")[0] == "image"):
+            content = downscale_image(
+                data["data"], data["fileType"].split("/")[1], .1).read()
+        emit("message", {"name": name, "data": content,
+                         "timestamp": timestamp, "type": "file", "fileType": data["fileType"], "fileName": data["fileName"], "fileId": fileId}, to=room)
     if data["type"] == "text":
         content = data["data"]
         cur.execute(
@@ -231,13 +236,14 @@ def get_history(room):
         history.append(
             {"content": message[0], "content_type": message[1], "author": message[2], "timestamp": message[4], "type": "message"})
     files = cur.execute(
-        f'SELECT data, file_type, file_name, author, room, timestamp FROM files WHERE room="{room}"').fetchall()
+        f'SELECT data, file_type, file_name, author, room, timestamp, id FROM files WHERE room="{room}"').fetchall()
     for file in files:
         content = ""
         if (file[1].split("/")[0] == "image"):
-            content = downscale_image(file[0], file[1].split("/")[1], .1)
+            content = base64.b64encode(downscale_image(base64.b64decode(
+                file[0].decode()), file[1].split("/")[1], .1).getvalue()).decode("utf-8")
         history.append({"content": content, "fileType": file[1],
-                       "fileName": file[2], "timestamp": file[5], "type": "file", "author": file[3]})
+                       "fileName": file[2], "timestamp": file[5], "type": "file", "author": file[3], "fileId": file[6]})
     logs = cur.execute(
         f'SELECT content, timestamp, room FROM logs WHERE room="{room}"').fetchall()
     for log in logs:

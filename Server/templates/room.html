@@ -227,13 +227,15 @@
     );
   } else if ("{{element.type}}" == "file") {
     var str = "{{element.content}}";
+    console.log(str);
     var base64String = "data:{{element.fileType}};base64," + str;
     createFileItem(
       "{{element.author}}",
       base64String,
       "{{element.fileType}}",
       "{{element.fileName}}",
-      "{{element.timestamp}}"
+      "{{element.timestamp}}",
+      "{{element.fileId}}"
     );
   } else if ("{{element.type}}" == "log") {
     createLog("{{element.content}}", "{{element.timestamp}}");
