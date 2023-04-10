@@ -1,5 +1,6 @@
 const recentRoomList = document.getElementById("recent-room-list");
 
+// Fetches rooms stored in Localstorage and displays them if they still exist
 const getRecentRooms = () => {
   const recentRooms = JSON.parse(localStorage.getItem("recent_rooms")) || {};
   for (var key in recentRooms) {
@@ -55,3 +56,29 @@ const getRecentRooms = () => {
 };
 
 getRecentRooms();
+
+// When the user clicks on the button, scroll to the top of the document
+const scrollToTop = () => {
+  document.body.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+};
+
+const scrollToCreate = () => {
+  setTimeout(() => {
+    document.getElementById("name-input").focus();
+  }, 500);
+  scrollToTop();
+};
+
+const scrollToUsage = () => {
+  const navbarHeight = document.querySelector("nav").offsetHeight;
+  const targetElement = document.getElementById("usage");
+  const targetPosition =
+    targetElement.getBoundingClientRect().top + window.scrollY;
+  document.body.scrollTo({
+    top: targetPosition - navbarHeight,
+    behavior: "smooth",
+  });
+};

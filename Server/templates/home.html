@@ -1,11 +1,11 @@
 {% extends 'base.html' %} {% block content %} {%if error %}
 <div class="error">{{error}}</div>
 {% endif %}
-<div class="nav-bar">
-  <div class="nav-item">Home</div>
-  <div class="nav-item">Usage</div>
-  <div class="nav-item">About</div>
-</div>
+<nav class="nav-bar">
+  <button id="nav-create" onclick="scrollToCreate()">Create</button>
+  <a class="nav-item" href="javascript:scrollToUsage();">Usage</a>
+  <a class="nav-item" href="#about">About</a>
+</nav>
 <div class="home-top">
   <form method="post" class="create-form">
     <p class="position-text">
@@ -44,7 +44,7 @@
     <div class="room-list" id="recent-room-list"></div>
   </div>
 </div>
-<div class="usage">
+<div class="usage" id="usage">
   <h2>Usage</h2>
   <div class="usage-text">
     <p class="primary-color">
@@ -57,8 +57,99 @@
       will be deleted after a certain amount of time.
     </p>
   </div>
-  <button class="text-button create-now">Create now ➔</button>
+  <button onclick="scrollToCreate()" class="text-button create-now">
+    Create now ➔
+  </button>
 </div>
+<footer class="footer" id="about">
+  <div class="footer__addr">
+    <h1 class="footer__logo">Something</h1>
+
+    <h2>Contact</h2>
+
+    <address>
+      5534 Somewhere In. The World 22193-10212<br />
+
+      <a class="footer__btn" href="mailto:example@gmail.com">Email Us</a>
+    </address>
+  </div>
+
+  <ul class="footer__nav">
+    <li class="nav__item">
+      <h2 class="nav__title">Media</h2>
+
+      <ul class="nav__ul">
+        <li>
+          <a href="#">Online</a>
+        </li>
+
+        <li>
+          <a href="#">Print</a>
+        </li>
+
+        <li>
+          <a href="#">Alternative Ads</a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="nav__item nav__item--extra">
+      <h2 class="nav__title">Technology</h2>
+
+      <ul class="nav__ul nav__ul--extra">
+        <li>
+          <a href="#">Hardware Design</a>
+        </li>
+
+        <li>
+          <a href="#">Software Design</a>
+        </li>
+
+        <li>
+          <a href="#">Digital Signage</a>
+        </li>
+
+        <li>
+          <a href="#">Automation</a>
+        </li>
+
+        <li>
+          <a href="#">Artificial Intelligence</a>
+        </li>
+
+        <li>
+          <a href="#">IoT</a>
+        </li>
+      </ul>
+    </li>
+
+    <li class="nav__item">
+      <h2 class="nav__title">Legal</h2>
+
+      <ul class="nav__ul">
+        <li>
+          <a href="#">Privacy Policy</a>
+        </li>
+
+        <li>
+          <a href="#">Terms of Use</a>
+        </li>
+
+        <li>
+          <a href="#">Sitemap</a>
+        </li>
+      </ul>
+    </li>
+  </ul>
+
+  <div class="legal">
+    <p>&copy; 2019 Something. All rights reserved.</p>
+
+    <div class="legal__links">
+      <span>Made with <span class="heart">♥</span> remotely from Anywhere</span>
+    </div>
+  </div>
+</footer>
 <script
   type="text/javascript"
   src="{{url_for('static', filename='js/home.js')}}"

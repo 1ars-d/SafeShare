@@ -58,9 +58,9 @@ const setCountdown = () => {
   const seconds = Math.max(0, Math.floor((timeRemaining % (1000 * 60)) / 1000));
 
   // Check if room is expired
-  /* if (minutes == 0 && seconds == 0) {
+  if (minutes == 0 && seconds == 0) {
     window.location.replace("/");
-  } */
+  }
 
   // display the countdown
   countdown.innerHTML = `${minutes.toLocaleString(undefined, {
@@ -74,7 +74,7 @@ setCountdown();
 const chatTime = setInterval(setCountdown, 1000);
 
 const createMessage = (name, message, timestamp) => {
-  const date = new Date(timestamp).toDateString();
+  const date = formatDate(new Date(timestamp));
   const content = `
     <div class="message-item ${userName == name ? "message-item-self" : ""}">
       <div class="message-info">
@@ -99,7 +99,7 @@ const createFileItem = (
   width,
   height
 ) => {
-  const date = new Date(timestamp).toDateString();
+  const date = formatDate(new Date(timestamp));
   let content;
   if (fileType.split("/")[0] == "image") {
     const availableWidth = messages.clientWidth;
@@ -139,7 +139,11 @@ const createFileItem = (
         <div class="file-container">
           <a href="/file/${download_id}" target="_blank" class="file-download"><svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 30 30" width="30px" height="30px" fill="${
       name == userName ? "white" : "#04be8c"
-    }">    <path d="M24.707,8.793l-6.5-6.5C18.019,2.105,17.765,2,17.5,2H7C5.895,2,5,2.895,5,4v22c0,1.105,0.895,2,2,2h16c1.105,0,2-0.895,2-2 V9.5C25,9.235,24.895,8.981,24.707,8.793z M18,10c-0.552,0-1-0.448-1-1V3.904L23.096,10H18z"/></svg><p>${fileName}</p></a>
+    }">    <path d="M24.707,8.793l-6.5-6.5C18.019,2.105,17.765,2,17.5,2H7C5.895,2,5,2.895,5,4v22c0,1.105,0.895,2,2,2h16c1.105,0,2-0.895,2-2 V9.5C25,9.235,24.895,8.981,24.707,8.793z M18,10c-0.552,0-1-0.448-1-1V3.904L23.096,10H18z"/></svg><p>${fileName}</p><div class="btn-file-download"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="white">
+    <path d="M17 12v5H3v-5H1v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5z"/>
+    <path d="M10 15l5-6h-4V1H9v8H5l5 6z"/>
+    </svg><p>${formatBytes(file_size)}</p></div></a>
+        
         </div>
       </div>
       `;
@@ -163,6 +167,33 @@ function formatBytes(bytes) {
 const createLog = (log, timestamp) => {
   //const content = `<div class="log-item">${log} (${timestamp})</div>`;
   //messages.innerHTML += content;
+};
+
+const formatDate = (date) => {
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+
+  const formattedDate = `${day}. ${month} ${year}`;
+  const formattedTime = `${hours}:${minutes < 10 ? "0" + minutes : minutes}`;
+
+  return `${formattedTime} ${formattedDate}`;
 };
 
 socketio.on("message", (data) => {

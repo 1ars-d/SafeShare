@@ -1,5 +1,6 @@
 .chat {
   height: 100%;
+  background-color: white;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,8 +25,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  background-color: var(--main-color);
-  box-shadow: rgba(0, 0, 0, 0.13) 0px 2px 6px;
+  background-color: var(--neutral-color);
+  color: var(--text-color);
 }
 
 .room-header h2,
@@ -34,7 +35,6 @@
 }
 
 #remaining-time {
-  color: white;
   font-size: 22px;
   margin-right: 5px;
 }
@@ -51,9 +51,11 @@
 #message {
   flex: 1;
   height: 100%;
+  width: 100%;
   max-height: 50px;
   padding-top: 0;
   padding-bottom: 0;
+  background-color: rgba(0, 0, 0, 0.025);
 }
 
 #add-btn {
@@ -165,9 +167,6 @@
   color: var(--secondary-color);
 }
 
-.room-code {
-  color: white;
-}
 
 @media screen and (max-width: 750px) {
   .message-box {
@@ -193,22 +192,6 @@
   user-select: none;
 }
 
-.upload-file {
-  padding: 12px;
-  color: #fff;
-  background-color: var(--secondary-color);
-  font-family: sans-serif;
-  cursor: pointer;
-  font-size: 16px;
-  border-radius: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.upload-file:hover {
-  background-color: var(--primary-blue);
-}
 
 .upload-file svg {
   color: white;
@@ -397,6 +380,14 @@
   filter: brightness(.6);
 }
 
+#remaining-time {
+  font-weight: lighter;
+}
+
+.room-code {
+  font-weight: normal;
+}
+
 .btn-img-download {
   display: flex;
   flex-direction: row;
@@ -408,8 +399,53 @@
   transform: translate(-50%, -50%) ;
   padding: 12px 8px;
   gap: 8px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 20px;
   min-width: 120px;
   font-size: 14px;
+}
+
+.btn-file-download {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 20px;
+  min-width: 120px;
+  font-size: 14px;
+  padding: 12px 8px;
+}
+
+.message-input-container {
+  height: 100%;
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.upload-container {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+
+.upload-file {
+  padding: 12px;
+  font-family: sans-serif;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-file:hover {
+  background-color: rgba(0, 0, 0, 0.1);
 }
