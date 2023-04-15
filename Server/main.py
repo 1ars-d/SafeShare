@@ -179,7 +179,7 @@ def message(data):
             "INSERT INTO files(data, file_type, file_name, author, room, timestamp, id, width, height) VALUES(?,?,?,?,?,?,?,?,?)", (base64.b64encode(data["data"]), data["fileType"], data["fileName"], name, room, timestamp, fileId, width, height))
         conn.commit()
         content = ""
-        if (data["fileType"].split("/")[0] == "image"):
+        if (data["fileType"].split("/")[0] == "image" and data["fileName"].lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))):
             content = downscale_image(
                 data["data"], data["fileType"].split("/")[1], .1).read()
         emit("message", {"name": name, "data": content,

@@ -66,9 +66,17 @@ const scrollToTop = () => {
 };
 
 const scrollToCreate = () => {
+  var indicator = document.querySelector(".indicator"),
+    joinForm = document.getElementById("join-form"),
+    createRoom = document.getElementById("create-room-btn");
+  indi = 0;
+  indicator.style.marginLeft = indi + "px";
+  indicator.style.marginLeft = indi + 50 + "%";
+  createRoom.classList.remove("dp-none");
+  joinForm.classList.add("dp-none");
   setTimeout(() => {
     document.getElementById("name-input").focus();
-  }, 500);
+  }, 300);
   scrollToTop();
 };
 
@@ -82,3 +90,48 @@ const scrollToUsage = () => {
     behavior: "smooth",
   });
 };
+
+const waveBtn = (function () {
+  "use strict";
+  var btn = document.querySelectorAll(".wave"),
+    tab = document.querySelector(".tab-bar"),
+    indicator = document.querySelector(".indicator"),
+    joinForm = document.getElementById("join-form"),
+    createRoom = document.getElementById("create-room-btn"),
+    indi = 0;
+  indicator.style.marginLeft = indi + "px";
+
+  for (var i = 0; i < btn.length; i++) {
+    btn[i].onmousedown = function (e) {
+      var newRound = document.createElement("div"),
+        x,
+        y;
+
+      newRound.className = "cercle";
+      this.appendChild(newRound);
+
+      x = e.pageX - this.getBoundingClientRect().left;
+      y = e.pageY - this.getBoundingClientRect().top;
+
+      newRound.style.left = x + "px";
+      newRound.style.top = y + "px";
+      newRound.className += " anim";
+
+      indicator.style.marginLeft = indi + (this.dataset.num - 1) * 50 + "%";
+
+      const tappedJoin = this.dataset.num - 1 == 0;
+
+      if (tappedJoin) {
+        joinForm.classList.remove("dp-none");
+        createRoom.classList.add("dp-none");
+      } else {
+        createRoom.classList.remove("dp-none");
+        joinForm.classList.add("dp-none");
+      }
+
+      setTimeout(function () {
+        newRound.remove();
+      }, 120000);
+    };
+  }
+})();

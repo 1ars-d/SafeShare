@@ -9,10 +9,10 @@
 }
 
 :root {
-  --main-color: #4285F4;
+  --main-color: #4285f4;
   --secondary-color: #3a77d8;
   --neutral-color: #f9f9f9;
-  --dark-background: #413F3D;
+  --dark-background: #413f3d;
   --text-color: #22292f;
 }
 
@@ -20,12 +20,25 @@
   display: none;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
-.messages {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+::selection {
+  background-color: var(--secondary-color);
+  color: white;
 }
 
+/* Hide scrollbar for IE, Edge and Firefox */
+.messages {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+input,
+textarea,
+button,
+select,
+li,
+a {
+  -webkit-tap-highlight-color: transparent !important;
+}
 
 body {
   color: var(--text-color);
@@ -113,7 +126,6 @@ button:active {
   box-shadow: 1px 3px 5px rgba(0, 0, 0, 0.4);
 }
 
-
 .button-no-bg {
   background-color: rgba(0, 0, 0, 0.05);
   color: rgba(0, 0, 0, 0.6);
@@ -144,11 +156,10 @@ button:active {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-
 .error {
   padding: 12px 25px;
   color: white;
-  background-color: #DB4437;
+  background-color: #db4437;
   position: absolute;
   top: 10%;
   margin: auto;
@@ -180,7 +191,7 @@ button:active {
 }
 
 .primary-color {
-  color: var(--main-color);
+  color: var(--main-color) !important;
 }
 
 .secondary-color {

@@ -2,18 +2,30 @@
 <div class="error">{{error}}</div>
 {% endif %}
 <nav class="nav-bar">
-  <button id="nav-create" onclick="scrollToCreate()">Create</button>
-  <a class="nav-item" href="javascript:scrollToUsage();">Usage</a>
-  <a class="nav-item" href="#about">About</a>
+  <div id="nav-icon">
+    <img
+      src="{{url_for('static',
+  filename='icons/page_icon.png')}}"
+    />
+    <p>SafeShare</p>
+  </div>
+  <div class="nav-links">
+    <button id="nav-create" onclick="scrollToCreate()">Create</button>
+    <a class="nav-item" href="javascript:scrollToUsage();">Usage</a>
+    <a class="nav-item" href="#about">About</a>
+  </div>
 </nav>
 <div class="home-top">
   <form method="post" class="create-form">
     <p class="position-text">
-      <span class="primary-color">TDC</span>
-      &gt
       <span class="primary-blue">Create Room</span>
     </p>
-    <div class="card">
+    <ul class="tab-bar">
+      <li data-num="1" class="tab wave dark primary-color">Join</li>
+      <li data-num="2" class="tab wave dark" id="create-tab">Create Room</li>
+      <div class="indicator"></div>
+    </ul>
+    <div class="card tab-card">
       <div class="name-form">
         <input
           type="text"
@@ -23,8 +35,7 @@
           value="{{name}}"
         />
       </div>
-      <label class="primary-color" for="code-input">Join</label>
-      <div class="join-form">
+      <div class="join-form" id="join-form">
         <input
           placeholder="Room Code"
           id="code-input"
@@ -33,8 +44,12 @@
         />
         <button type="submit" name="join">Join</button>
       </div>
-      <label class="primary-blue">Create Room</label>
-      <button class="button-no-bg" name="create" type="submit">
+      <button
+        class="button-no-bg dp-none"
+        id="create-room-btn"
+        name="create"
+        type="submit"
+      >
         Create New Room
       </button>
     </div>
@@ -63,7 +78,13 @@
 </div>
 <footer class="footer" id="about">
   <div class="footer__addr">
-    <h1 class="footer__logo">Something</h1>
+    <div id="footer-icon">
+      <img
+        src="{{url_for('static',
+    filename='icons/page_icon.png')}}"
+      />
+      <p>SafeShare</p>
+    </div>
 
     <h2>Contact</h2>
 

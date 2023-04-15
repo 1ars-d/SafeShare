@@ -105,7 +105,7 @@ def get_history(room):
         f'SELECT data, file_type, file_name, author, room, timestamp, id, width, height FROM files WHERE room="{room}"').fetchall()
     for file in files:
         content = ""
-        if (file[1].split("/")[0] == "image"):
+        if (file[1].split("/")[0] == "image" and file[2].lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))):
             content = base64.b64encode(downscale_image(base64.b64decode(
                 file[0].decode()), file[1].split("/")[1], .1).getvalue()).decode("utf-8")
         history.append({"content": content, "fileType": file[1],
