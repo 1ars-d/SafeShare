@@ -1,2 +1,3 @@
-# Temporary Data Chat
- Quickly transfer data between devices
+# SafeShare
+
+Quickly transfer data between devices
