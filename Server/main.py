@@ -132,7 +132,7 @@ def download_file(file_id):
     return send_file(
         data,
         as_attachment=True,
-        attachment_filename=file[2],
+        download_name=file[2],
         mimetype=file[1]
     )
 
@@ -196,4 +196,4 @@ def message(data):
 
 if __name__ == "__main__":
     # Run Server
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=True, host="192.168.178.57")
