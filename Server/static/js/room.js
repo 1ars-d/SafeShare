@@ -58,9 +58,9 @@ const setCountdown = () => {
   const seconds = Math.max(0, Math.floor((timeRemaining % (1000 * 60)) / 1000));
 
   // Check if room is expired
-  if (minutes == 0 && seconds == 0) {
+  /* if (minutes == 0 && seconds == 0) {
     window.location.replace("/");
-  }
+  } */
 
   // display the countdown
   countdown.innerHTML = `${minutes.toLocaleString(undefined, {

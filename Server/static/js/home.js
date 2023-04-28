@@ -1,4 +1,18 @@
 const recentRoomList = document.getElementById("recent-room-list");
+const roomTypeSwitch = document.getElementById("room-type-switch");
+const roomTypeLeft = document.getElementById("room-type-left");
+const roomTypeRight = document.getElementById("room-type-right");
+const roomTypeSwitchIndicator = document.getElementById("switch-indicator");
+const roomPasswordInput = document.getElementById("room-password");
+var secured = true;
+
+roomTypeSwitch.addEventListener("click", (e) => {
+  secured = !secured;
+  roomTypeLeft.classList.toggle("switch-item-active");
+  roomTypeRight.classList.toggle("switch-item-active");
+  roomTypeSwitchIndicator.classList.toggle("switch-indicator-right");
+  roomPasswordInput.classList.toggle("dp-none");
+});
 
 // Fetches rooms stored in Localstorage and displays them if they still exist
 const getRecentRooms = () => {
@@ -68,7 +82,7 @@ const scrollToTop = () => {
 const scrollToCreate = () => {
   var indicator = document.querySelector(".indicator"),
     joinForm = document.getElementById("join-form"),
-    createRoom = document.getElementById("create-room-btn");
+    createRoom = document.getElementById("create-room-options");
   indi = 0;
   indicator.style.marginLeft = indi + "px";
   indicator.style.marginLeft = indi + 50 + "%";
@@ -97,7 +111,7 @@ const waveBtn = (function () {
     tab = document.querySelector(".tab-bar"),
     indicator = document.querySelector(".indicator"),
     joinForm = document.getElementById("join-form"),
-    createRoom = document.getElementById("create-room-btn"),
+    createRoom = document.getElementById("create-room-options"),
     indi = 0;
   indicator.style.marginLeft = indi + "px";
 

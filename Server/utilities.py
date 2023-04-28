@@ -74,7 +74,7 @@ def get_base64_size(base64_string):  # currently unused
 
 
 def check_rooms():
-    conn = sqlite3.connect("ROOMS_db.sqlite")
+    """ conn = sqlite3.connect("ROOMS_db.sqlite")
     cur = conn.cursor()
     due_time = (datetime.datetime.now() -
                 datetime.timedelta(minutes=REMOVE_ROOM_AFTER)).isoformat()
@@ -86,7 +86,8 @@ def check_rooms():
         cur.execute(f'DELETE FROM logs WHERE room="{code[0]}"')
         cur.execute(f'DELETE FROM files WHERE room="{code[0]}"')
     conn.commit()
-    conn.close()
+    conn.close() """
+    pass
 
 
 # returns a list of messages and files sent in a room
