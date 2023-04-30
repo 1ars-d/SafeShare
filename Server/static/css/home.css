@@ -539,3 +539,7 @@
 #password-input {
   width: 100%;
 }
+
+#type-warning {
+  color: #e72020;
+}

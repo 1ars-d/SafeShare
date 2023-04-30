@@ -11,7 +11,7 @@ const recentRoomList = document.getElementById("recent-room-list");
   const recentRooms = JSON.parse(localStorage.getItem("recent_rooms")) || {};
   for (let key in recentRooms) {
     const closeTime = 1; // in minutes
-    const targetDate = new Date(recentRooms[key][2]);
+    const targetDate = new Date(recentRooms[key].timestamp);
     targetDate.setMinutes(targetDate.getMinutes() + closeTime);
     const currentDate = new Date();
     const timeRemaining = targetDate.getTime() - currentDate.getTime();
@@ -32,7 +32,7 @@ const recentRoomList = document.getElementById("recent-room-list");
     })}:${seconds.toLocaleString(undefined, {
       minimumIntegerDigits: 2,
     })}`;
-    const link = `/join/${key}/${recentRooms[key][0]}/${recentRooms[key][1]}`;
+    const link = `/join/${key}/${recentRooms[key].username}/${recentRooms[key].userId}`;
     recentRoomList.innerHTML += `<a class="room-item" href="${link}" >
         <p class="room-item-label">${key}</p>
         <p class="room-item-time" id="${key}-time">${minuteString}</p>
@@ -79,6 +79,12 @@ const roomTypeSwitch = document.getElementById("room-type-switch");
 const roomTypeLeft = document.getElementById("room-type-left");
 const roomTypeRight = document.getElementById("room-type-right");
 const roomTypeSwitchIndicator = document.getElementById("switch-indicator");
+const typeWarning = document.getElementById("type-warning");
+
+// Make room code uppercase
+roomCodeInput.addEventListener("input", (_) => {
+  roomCodeInput.value = roomCodeInput.value.toUpperCase();
+});
 
 createForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -91,6 +97,7 @@ createForm.addEventListener("submit", (event) => {
     );
   }
   if (roomTypeSecured) {
+    localStorage.setItem("last_typed_password", roomPasswordInput.value);
     return window.location.replace(
       `/create-secured/${nameInput.value}/${roomPasswordInput.value}`
     );
@@ -117,6 +124,7 @@ roomTypeSwitch.addEventListener("click", (e) => {
   roomTypeRight.classList.toggle("switch-item-active");
   roomTypeSwitchIndicator.classList.toggle("switch-indicator-right");
   roomPasswordInput.classList.toggle("dp-none");
+  typeWarning.classList.toggle("dp-none");
 });
 
 // ---------------------------------------------------------------- //

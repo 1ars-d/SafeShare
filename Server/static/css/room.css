@@ -256,7 +256,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #51a57e1a;
+  background-color: #4286f425;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -324,6 +324,13 @@
   margin-bottom: 10px;
 }
 
+.members-popup p {
+  padding: 5px 15px;
+  background: rgba(0, 0, 0, 0.035);
+  width: fit-content;
+  border-radius: 5px;
+}
+
 .qr-popup {
   position: absolute;
   z-index: 10000;
@@ -358,6 +365,18 @@
 
 #btn-qr:hover .qr-popup {
   display: flex;
+}
+
+#qr-lock-icon {
+  position: absolute;
+  background-color: white;
+  height: 91px;
+  width: 91px;
+  border-radius: 0px;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-56%);
+  padding: 5px;
 }
 
 .qr-popup p {

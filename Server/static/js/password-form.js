@@ -6,6 +6,7 @@ passwordForm.addEventListener("submit", (event) => {
   if (passwordInput.value == "") {
     return;
   }
+  localStorage.setItem("last_typed_password", passwordInput.value);
   window.location.replace(
     `/join-secured/${room}/${name}/${user_id}/${passwordInput.value}`
   );

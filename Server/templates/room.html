@@ -21,11 +21,18 @@
   <div class="room-header">
     <div class="top-left">
       <h2 class="room-header-code">
-        <span class="room-code"># {{room}}</span>
+        <span class="room-code"># {{room}}</span
+        ><span id="room-password-text"></span>
       </h2>
       <button id="btn-qr" class="top-action text-button">
         <div class="qr-popup" id="qr-code">
-          <div id="qr-image"></div>
+          <div id="qr-image">
+            <img
+              id="qr-lock-icon"
+              src="{{url_for('static',
+            filename='icons/icon_lock.png')}}"
+            />
+          </div>
           <p>Scan to join</p>
         </div>
         <svg
@@ -205,10 +212,12 @@
 <script type="text/javascript">
   // Setup variable passed by backend
   const roomCode = "{{room}}";
+  const roomType = "{{room_type}}"
   const targetDateString = "{{timestamp[0]}}";
   const userName = "{{name}}";
   const userId = "{{user_id}}";
   const closeTime = {{close_time}}; // in minutes
+  const messagesFromBackend = [];
 </script>
 <script
   type="text/javascript"
@@ -223,26 +232,26 @@
 <script type="text/javascript">
   // Get History from backend
   if ("{{element.type}}" == "message") {
-    createMessage(
+    messagesFromBackend.push([
+      "message",
       "{{element.author}}",
       "{{element.content}}",
       "{{element.timestamp}}",
-      false
-    );
+      false,
+    ]);
   } else if ("{{element.type}}" == "file") {
-    var str = "{{element.content}}";
-    var base64String = "data:{{element.fileType}};base64," + str;
-    createFileItem(
+    messagesFromBackend.push([
+      "file",
       "{{element.author}}",
-      base64String,
+      "{{element.content}}",
       "{{element.fileType}}",
       "{{element.fileName}}",
       "{{element.timestamp}}",
       "{{element.fileId}}",
       "{{element.fileSize}}",
       "{{element.imageWidth}}",
-      "{{element.imageHeight}}"
-    );
+      "{{element.imageHeight}}",
+    ]);
   } else if ("{{element.type}}" == "log") {
     createLog("{{element.content}}", "{{element.timestamp}}");
   }

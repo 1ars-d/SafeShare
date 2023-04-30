@@ -217,3 +217,32 @@ button:active {
 .primary-blue {
   color: var(--primary-blue);
 }
+
+#page-loader {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-color: #4286f43e;
+  z-index: 100000;
+  pointer-events: none;
+  animation: page-load 0.5s ease-in-out forwards;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes page-load {
+  0% {
+    background-color: #ffffff;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}

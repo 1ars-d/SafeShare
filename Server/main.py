@@ -84,7 +84,7 @@ def room():  # Checks if room stored in session exists and provides
     output_members = get_members(room)
     timestamp = get_room_timestamp(room)
     history = get_history(room)
-    return render_template("room.html", room=room, history=history, timestamp=timestamp, name=name, user_id=user_id, members=output_members, close_time=REMOVE_ROOM_AFTER)
+    return render_template("room.html", room=room, history=history, timestamp=timestamp, name=name, user_id=user_id, members=output_members, close_time=REMOVE_ROOM_AFTER, room_type=get_room_type(room))
 
 
 # Route for room invitations
