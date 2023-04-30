@@ -13,7 +13,7 @@ import base64
 import datetime
 
 # Helpers
-from utilities import generate_unique_code, room_exists, setup_db, check_rooms, get_db_connecton, get_history, get_room_timestamp, get_members, downscale_image, get_image_dimensions, send_log, hash_password
+from utilities import generate_unique_code, room_exists, setup_db, check_rooms, get_db_connecton, get_history, get_room_timestamp, get_members, downscale_image, get_image_dimensions, send_log, hash_password, get_room_type, check_room_password
 from CONSTANTS import REMOVE_ROOM_AFTER, MAX_BUFFER_SIZE
 
 
@@ -134,19 +134,24 @@ def create_open(name):
     return redirect(url_for("room"))
 
 
-# Route to join room via link -> used for inviatations
+# Route to join room
 @app.route('/join/<string:room>/<string:name>/<string:user_id>')
 def join(room, name, user_id):
     if not room_exists(room):
         if user_id == "join":
-            return render_template("join.html", room=room)
+            return render_template("join.html", room=room, name=name, error="This room doesnt exist")
         else:
             return render_template("home.html", code=room, name=name, error="This room doesnt exist")
     conn, cur = get_db_connecton()
     name_entry = cur.execute(
         f'SELECT id FROM users WHERE room="{room}" AND name="{name}"').fetchone()
     if name_entry and user_id != str(name_entry[0]):
-        return render_template("join.html", error="This username already exists in this room", room=room)
+        if user_id == "join":
+            return render_template("join.html", room=room, name=name, error="This username already exists in this room")
+        else:
+            return render_template("home.html", code=room, name=name, error="This username already exists in this room")
+    if get_room_type(room) == "secured":
+        return redirect(f"/join/enter-password/{room}/{name}/{user_id}")
     if not name_entry:
         cur.execute(
             f'INSERT into users (name, room) VALUES(?,?)', (name, room))
@@ -158,6 +163,35 @@ def join(room, name, user_id):
     session["name"] = name
     session["user_id"] = user_id
     return redirect(url_for("room"))
+
+
+@app.route("/join-secured/<string:room>/<string:name>/<string:user_id>/<string:password>")
+def join_secured(room, name, user_id, password):
+    if not room_exists(room) or get_room_type(room) == "open":
+        return render_template("home.html", code=room, name=name, error="This room doesnt exist")
+    if not check_room_password(room, password):
+        return render_template("password-form.html", room=room, name=name, user_id=user_id, error="Incorrect password")
+    conn, cur = get_db_connecton()
+    name_entry = cur.execute(
+        f'SELECT id FROM users WHERE room="{room}" AND name="{name}"').fetchone()
+    if name_entry and user_id != str(name_entry[0]):
+        return render_template("home.html", code=room, name=name, error="This username already exists in this room")
+    if not name_entry:
+        cur.execute(
+            f'INSERT into users (name, room) VALUES(?,?)', (name, room))
+    conn.commit()
+    user_id = cur.execute(
+        f'SELECT id FROM users WHERE room="{room}" AND name="{name}"').fetchone()[0]
+    conn.close()
+    session["room"] = room
+    session["name"] = name
+    session["user_id"] = user_id
+    return redirect(url_for("room"))
+
+
+@app.route("/join/enter-password/<string:room>/<string:name>/<string:user_id>/")
+def join_enter_password(room, name, user_id):
+    return render_template("password-form.html", room=room, name=name, user_id=user_id)
 
 
 # Route to download file stored in database

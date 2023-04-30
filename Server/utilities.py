@@ -44,12 +44,29 @@ def generate_unique_code(length):
 
 
 def room_exists(room):
-    conn = sqlite3.connect("ROOMS_db.sqlite")
-    cur = conn.cursor()
+    conn, cur = get_db_connecton()
     exists = cur.execute(
         f'SELECT COUNT(1) FROM rooms WHERE code="{room}"').fetchone()[0] != 0
     conn.close()
     return exists
+
+
+def get_room_type(room):
+    conn, cur = get_db_connecton()
+    room_type = cur.execute(
+        f'SELECT type FROM rooms WHERE code="{room}"').fetchone()[0]
+    conn.close()
+    return room_type
+
+
+def check_room_password(room, password_to_check):
+    conn, cur = get_db_connecton()
+    room_data = cur.execute(
+        f'SELECT key, salt FROM rooms WHERE code="{room}"').fetchone()
+    conn.close()
+    new_key = hashlib.pbkdf2_hmac(
+        "sha256", password_to_check.encode("utf-8"), room_data[1], 100000)
+    return new_key == room_data[0]
 
 
 def is_date_past(date1, date2):
