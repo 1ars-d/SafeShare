@@ -13,7 +13,7 @@ import base64
 import datetime
 
 # Helpers
-from utilities import generate_unique_code, room_exists, setup_db, check_rooms, get_db_connecton, get_history, get_room_timestamp, get_members, downscale_image, get_image_dimensions, send_log
+from utilities import generate_unique_code, room_exists, setup_db, check_rooms, get_db_connecton, get_history, get_room_timestamp, get_members, downscale_image, get_image_dimensions, send_log, hash_password
 from CONSTANTS import REMOVE_ROOM_AFTER, MAX_BUFFER_SIZE
 
 
@@ -36,7 +36,7 @@ sched.start()
 @app.route("/", methods=["POST", "GET"])  # Homepage Route
 def home():
     session.clear()
-    if request.method == "POST":  # -> Reads form and either redirects user to specific room or creates a new one
+    """ if request.method == "POST":  # -> Reads form and either redirects user to specific room or creates a new one
         name = request.form.get("name", "")
         code = request.form.get("code", "")
         join = request.form.get("join", False)
@@ -69,7 +69,7 @@ def home():
         session["room"] = room
         session["name"] = name
         session["user_id"] = user_id
-        return redirect(url_for("room"))
+        return redirect(url_for("room")) """
     return render_template("home.html", name="", code="")
 
 
@@ -95,11 +95,53 @@ def join_form(room):
     return render_template("join.html", room=room)
 
 
+# Route to create secured room
+@app.route('/create-secured/<string:name>/<string:password>')
+def create_secured(name, password):
+    conn, cur = get_db_connecton()
+    generated_code = generate_unique_code(5)
+    timestamp = datetime.datetime.now().isoformat()
+    salt, key = hash_password(password)
+    cur.execute(
+        "INSERT INTO rooms(code, timestamp, type, key, salt) VALUES(?,?,?,?,?)", (generated_code, timestamp, "secured", key, salt))
+    cur.execute(
+        f'INSERT into users (name, room) VALUES(?,?)', (name, generated_code))
+    conn.commit()
+    user_id = cur.lastrowid
+    conn.close()
+    session["room"] = generated_code
+    session["name"] = name
+    session["user_id"] = user_id
+    return redirect(url_for("room"))
+
+
+# Route to create open room
+@app.route('/create-open/<string:name>')
+def create_open(name):
+    conn, cur = get_db_connecton()
+    generated_code = generate_unique_code(5)
+    timestamp = datetime.datetime.now().isoformat()
+    cur.execute(
+        "INSERT INTO rooms(code, timestamp, type) VALUES(?,?,?)", (generated_code, timestamp, "open"))
+    cur.execute(
+        f'INSERT into users (name, room) VALUES(?,?)', (name, generated_code))
+    conn.commit()
+    user_id = cur.lastrowid
+    conn.close()
+    session["room"] = generated_code
+    session["name"] = name
+    session["user_id"] = user_id
+    return redirect(url_for("room"))
+
+
 # Route to join room via link -> used for inviatations
 @app.route('/join/<string:room>/<string:name>/<string:user_id>')
 def join(room, name, user_id):
     if not room_exists(room):
-        return redirect(url_for("home"))
+        if user_id == "join":
+            return render_template("join.html", room=room)
+        else:
+            return render_template("home.html", code=room, name=name, error="This room doesnt exist")
     conn, cur = get_db_connecton()
     name_entry = cur.execute(
         f'SELECT id FROM users WHERE room="{room}" AND name="{name}"').fetchone()

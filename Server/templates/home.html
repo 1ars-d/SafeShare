@@ -1,6 +1,5 @@
-{% extends 'base.html' %} {% block content %} {%if error %}
-<div class="error">{{error}}</div>
-{% endif %}
+{% extends 'base.html' %} {% block content %}
+<div id="error-list"></div>
 <nav class="nav-bar">
   <div id="nav-icon">
     <img
@@ -16,7 +15,7 @@
   </div>
 </nav>
 <div class="home-top">
-  <form method="post" class="create-form">
+  <div class="create-form" id="room-form">
     <p class="position-text">
       <span class="primary-blue">Create Room</span>
     </p>
@@ -35,7 +34,7 @@
           value="{{name}}"
         />
       </div>
-      <div class="join-form" id="join-form">
+      <form method="submit" class="join-form" id="join-form">
         <input
           placeholder="Room Code"
           id="code-input"
@@ -43,8 +42,8 @@
           value="{{code}}"
         />
         <button type="submit" name="join">Join</button>
-      </div>
-      <div id="create-room-options" class="dp-none">
+      </form>
+      <form method="submit" id="create-form" class="dp-none">
         <label>Room Type</label>
         <div class="switch" id="room-type-switch">
           <div class="switch-item switch-item-active" id="room-type-left">
@@ -56,6 +55,7 @@
           </div>
         </div>
         <input
+          type="password"
           placeholder="Room Password"
           id="room-password"
           name="room-password"
@@ -68,9 +68,9 @@
         >
           Create New Room
         </button>
-      </div>
+      </form>
     </div>
-  </form>
+  </div>
   <div class="recent-rooms">
     <p class="recent-title">Your Recent Rooms</p>
     <div class="room-list" id="recent-room-list"></div>
@@ -116,18 +116,19 @@
         <li>
           <a href="#">Usage</a>
         </li>
-
         <li>
           <a href="#">Safety</a>
         </li>
       </ul>
     </li>
   </ul>
-
   <div class="legal">
     <p>&copy; 2023 SafeShare</p>
   </div>
 </footer>
+<script type="text/javascript">
+  const error = "{{error}}";
+</script>
 <script
   type="text/javascript"
   src="{{url_for('static', filename='js/home.js')}}"

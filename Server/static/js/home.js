@@ -1,23 +1,15 @@
-const recentRoomList = document.getElementById("recent-room-list");
-const roomTypeSwitch = document.getElementById("room-type-switch");
-const roomTypeLeft = document.getElementById("room-type-left");
-const roomTypeRight = document.getElementById("room-type-right");
-const roomTypeSwitchIndicator = document.getElementById("switch-indicator");
-const roomPasswordInput = document.getElementById("room-password");
-var secured = true;
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
+// Recent Rooms                                                     //
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
 
-roomTypeSwitch.addEventListener("click", (e) => {
-  secured = !secured;
-  roomTypeLeft.classList.toggle("switch-item-active");
-  roomTypeRight.classList.toggle("switch-item-active");
-  roomTypeSwitchIndicator.classList.toggle("switch-indicator-right");
-  roomPasswordInput.classList.toggle("dp-none");
-});
+const recentRoomList = document.getElementById("recent-room-list");
 
 // Fetches rooms stored in Localstorage and displays them if they still exist
-const getRecentRooms = () => {
+(() => {
   const recentRooms = JSON.parse(localStorage.getItem("recent_rooms")) || {};
-  for (var key in recentRooms) {
+  for (let key in recentRooms) {
     const closeTime = 1; // in minutes
     const targetDate = new Date(recentRooms[key][2]);
     targetDate.setMinutes(targetDate.getMinutes() + closeTime);
@@ -67,9 +59,87 @@ const getRecentRooms = () => {
   if (recentRoomList.innerHTML == "") {
     recentRoomList.innerHTML = "No rooms found";
   }
+})();
+
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
+// Inputhandling                                                    //
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
+
+const createForm = document.getElementById("create-form");
+const joinForm = document.getElementById("join-form");
+
+const nameInput = document.getElementById("name-input");
+const roomCodeInput = document.getElementById("code-input");
+const roomPasswordInput = document.getElementById("room-password");
+
+let roomTypeSecured = true;
+const roomTypeSwitch = document.getElementById("room-type-switch");
+const roomTypeLeft = document.getElementById("room-type-left");
+const roomTypeRight = document.getElementById("room-type-right");
+const roomTypeSwitchIndicator = document.getElementById("switch-indicator");
+
+createForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (nameInput.value == "") {
+    return displayError("Please enter a name");
+  }
+  if (roomTypeSecured && roomPasswordInput.value.length < 4) {
+    return displayError(
+      "Your room's password must have a length of 5 characters or more"
+    );
+  }
+  if (roomTypeSecured) {
+    return window.location.replace(
+      `/create-secured/${nameInput.value}/${roomPasswordInput.value}`
+    );
+  }
+  window.location.replace(`/create-open/${nameInput.value}`);
+});
+
+joinForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  if (nameInput.value == "") {
+    return displayError("Please enter a name");
+  }
+  if (roomCodeInput.value == "") {
+    return displayError("Please enter a room code");
+  }
+  window.location.replace(
+    `/join/${roomCodeInput.value}/${nameInput.value}/home` // home is set to 'user_id' to specify where this request came from
+  );
+});
+
+roomTypeSwitch.addEventListener("click", (e) => {
+  roomTypeSecured = !roomTypeSecured;
+  roomTypeLeft.classList.toggle("switch-item-active");
+  roomTypeRight.classList.toggle("switch-item-active");
+  roomTypeSwitchIndicator.classList.toggle("switch-indicator-right");
+  roomPasswordInput.classList.toggle("dp-none");
+});
+
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
+// UI related functions                                             //
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
+const errorList = document.getElementById("error-list");
+
+const displayError = (message) => {
+  let error = document.createElement("div");
+  error.classList.add("error");
+  error.innerText = message;
+  errorList.appendChild(error);
+  setTimeout(() => {
+    error.remove();
+  }, 4000);
 };
 
-getRecentRooms();
+// error passed by server
+if (error != "") {
+  displayError(error);
+}
 
 // When the user clicks on the button, scroll to the top of the document
 const scrollToTop = () => {
@@ -80,13 +150,11 @@ const scrollToTop = () => {
 };
 
 const scrollToCreate = () => {
-  var indicator = document.querySelector(".indicator"),
-    joinForm = document.getElementById("join-form"),
-    createRoom = document.getElementById("create-room-options");
-  indi = 0;
+  let indicator = document.querySelector(".indicator"),
+    indi = 0;
   indicator.style.marginLeft = indi + "px";
   indicator.style.marginLeft = indi + 50 + "%";
-  createRoom.classList.remove("dp-none");
+  createForm.classList.remove("dp-none");
   joinForm.classList.add("dp-none");
   setTimeout(() => {
     document.getElementById("name-input").focus();
@@ -105,44 +173,33 @@ const scrollToUsage = () => {
   });
 };
 
-const waveBtn = (function () {
+const homeTabbarButtons = (() => {
   "use strict";
-  var btn = document.querySelectorAll(".wave"),
-    tab = document.querySelector(".tab-bar"),
+  let btn = document.querySelectorAll(".wave"),
     indicator = document.querySelector(".indicator"),
-    joinForm = document.getElementById("join-form"),
-    createRoom = document.getElementById("create-room-options"),
     indi = 0;
   indicator.style.marginLeft = indi + "px";
-
-  for (var i = 0; i < btn.length; i++) {
+  for (let i = 0; i < btn.length; i++) {
     btn[i].onmousedown = function (e) {
-      var newRound = document.createElement("div"),
+      let newRound = document.createElement("div"),
         x,
         y;
-
       newRound.className = "cercle";
       this.appendChild(newRound);
-
       x = e.pageX - this.getBoundingClientRect().left;
       y = e.pageY - this.getBoundingClientRect().top;
-
       newRound.style.left = x + "px";
       newRound.style.top = y + "px";
       newRound.className += " anim";
-
       indicator.style.marginLeft = indi + (this.dataset.num - 1) * 50 + "%";
-
       const tappedJoin = this.dataset.num - 1 == 0;
-
       if (tappedJoin) {
         joinForm.classList.remove("dp-none");
-        createRoom.classList.add("dp-none");
+        createForm.classList.add("dp-none");
       } else {
-        createRoom.classList.remove("dp-none");
+        createForm.classList.remove("dp-none");
         joinForm.classList.add("dp-none");
       }
-
       setTimeout(function () {
         newRound.remove();
       }, 120000);

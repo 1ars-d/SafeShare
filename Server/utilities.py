@@ -1,5 +1,6 @@
 import io
 import sys
+import os
 
 # Flask
 from flask_socketio import emit
@@ -10,12 +11,21 @@ import datetime
 import sqlite3
 from CONSTANTS import REMOVE_ROOM_AFTER
 
+# Encryption
+import hashlib
+
 # Image Manipulation
 from PIL import Image
 
 # Others
 from string import ascii_uppercase
 import random
+
+
+def hash_password(password):
+    salt = os.urandom(32)
+    key = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, 100000)
+    return (salt, key)
 
 
 def get_db_connecton():
@@ -54,7 +64,7 @@ def setup_db():
         ''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='rooms' ''')
     if cur.fetchone()[0] != 1:
         cur.execute(
-            'CREATE TABLE rooms (code TEXT, timestamp TEXT)')
+            'CREATE TABLE rooms (code TEXT, timestamp TEXT, type TEXT, key BINARY(128), salt BINARY(32))')
         cur.execute(
             'CREATE TABLE messages (content TEXT, content_type TEXT, author TEXT, room TEXT, timestamp TEXT)')
         cur.execute(

@@ -522,7 +522,7 @@
   transform: translateX(100px);
 }
 
-#create-room-options {
+#create-form {
   display: flex;
   flex-direction: column;
   gap: 12px;
