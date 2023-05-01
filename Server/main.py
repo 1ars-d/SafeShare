@@ -1,8 +1,7 @@
-import io
-import sys
+import dotenv
 
 # Flask
-from flask import Flask, render_template, session, request, redirect, url_for, abort, send_file
+from flask import Flask, render_template, session, request, redirect, url_for, abort, jsonify
 from flask_socketio import SocketIO, join_room, leave_room, emit
 
 # Database
@@ -14,23 +13,26 @@ import datetime
 
 # Helpers
 from utilities import generate_unique_code, room_exists, setup_db, check_rooms, get_db_connecton, get_history, get_room_timestamp, get_members, downscale_image, get_image_dimensions, send_log, hash_password, get_room_type, check_room_password
-from CONSTANTS import REMOVE_ROOM_AFTER, MAX_BUFFER_SIZE
 
 
 # Server Setup
 app = Flask(__name__)
+env_config = dotenv.dotenv_values(".env")
 app.config["SECRET_KEY"] = 'key!'
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
-app.config['MAX_CONTENT_LENGTH'] = MAX_BUFFER_SIZE
-socketio = SocketIO(app, max_http_buffer_size=MAX_BUFFER_SIZE)
+app.config['MAX_CONTENT_LENGTH'] = int(env_config["MAX_BUFFER_SIZE"])
+socketio = SocketIO(app, max_http_buffer_size=int(
+    env_config["MAX_BUFFER_SIZE"]))
 
 # DB Setup
 setup_db()
 
 # Schedule Setup -> Delete closed rooms
-sched = BackgroundScheduler(daemon=True)
-sched.add_job(check_rooms, 'interval', seconds=10)
-sched.start()
+if env_config["REMOVE_ROOMS"] == "True":
+    sched = BackgroundScheduler(daemon=True)
+    sched.add_job(lambda: check_rooms(
+        env_config["REMOVE_ROOMS_AFTER"]), 'interval', seconds=10)
+    sched.start()
 
 
 @app.route("/", methods=["POST", "GET"])  # Homepage Route
@@ -84,7 +86,7 @@ def room():  # Checks if room stored in session exists and provides
     output_members = get_members(room)
     timestamp = get_room_timestamp(room)
     history = get_history(room)
-    return render_template("room.html", room=room, history=history, timestamp=timestamp, name=name, user_id=user_id, members=output_members, close_time=REMOVE_ROOM_AFTER, room_type=get_room_type(room))
+    return render_template("room.html", room=room, history=history, timestamp=timestamp, name=name, user_id=user_id, members=output_members, close_time=env_config["REMOVE_ROOMS_AFTER"], room_type=get_room_type(room))
 
 
 # Route for room invitations
@@ -204,13 +206,16 @@ def download_file(file_id):
     if not file:
         return abort(400, "Record not found")
     conn.close()
-    data = io.BytesIO(base64.b64decode(file[0]))
-    return send_file(
-        data,
-        as_attachment=True,
-        download_name=file[2],
-        mimetype=file[1]
-    )
+    data = {
+        'file': file[0],
+        'fileSize': 0,
+        'content-type': file[1],
+        'fileName': file[2],
+    }
+    response = jsonify(data)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Content-Type', 'application/json')
+    return response
 
 
 # Creates socket connection when user joins
@@ -247,19 +252,12 @@ def message(data):
     timestamp = datetime.datetime.now().isoformat()
     if data["type"] == "file":
         fileId = shortuuid.uuid()
-        width = 0
-        height = 0
-        if (data["fileType"].split("/")[0] == "image"):
-            width, height = get_image_dimensions(data["data"])
+        print(data["data"])
         cur.execute(
-            "INSERT INTO files(data, file_type, file_name, author, room, timestamp, id, width, height) VALUES(?,?,?,?,?,?,?,?,?)", (base64.b64encode(data["data"]), data["fileType"], data["fileName"], name, room, timestamp, fileId, width, height))
+            "INSERT INTO files(data, file_type, file_name, author, room, timestamp, id) VALUES(?,?,?,?,?,?,?)", (data["data"], data["fileType"], data["fileName"], name, room, timestamp, fileId))
         conn.commit()
-        content = ""
-        if (data["fileType"].split("/")[0] == "image" and data["fileName"].lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))):
-            content = downscale_image(
-                data["data"], data["fileType"].split("/")[1], .1).read()
-        emit("message", {"name": name, "data": content,
-                         "timestamp": timestamp, "type": "file", "fileType": data["fileType"], "fileName": data["fileName"], "fileId": fileId, "fileSize": sys.getsizeof(data["data"]), "imageWidth": width, "imageHeight": height}, to=room)
+        emit("message", {"name": name, "data": "",
+                         "timestamp": timestamp, "type": "file", "fileType": data["fileType"], "fileName": data["fileName"], "fileId": fileId, "fileSize": 0}, to=room)
     if data["type"] == "text":
         content = data["data"]
         cur.execute(

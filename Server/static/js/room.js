@@ -96,64 +96,36 @@ const createFileItem = (
   fileType,
   fileName,
   timestamp,
-  download_id,
-  file_size, // in bytes
-  width,
-  height
+  downloadId,
+  fileSize // in bytes
 ) => {
   const date = formatDate(new Date(timestamp));
-  let content;
-  if (fileType.split("/")[0] == "image") {
-    const availableWidth = messages.clientWidth;
-    const availableHeight = messages.clientHeight;
-    imgWidth = 0;
-    imgHeight = 0;
-    if (parseInt(width) > parseInt(height)) {
-      imgWidth = Math.min(availableWidth / 2, 350);
-    } else {
-      imgHeight = Math.min(availableHeight / 2, 300);
-    }
-    content = `
-      <div class="message-item ${userName == name ? "message-item-self" : ""}">
-        <div class="message-info">
-          <p class="message-name">${name}</p>
-          <p class="message-time">${date}</p>
-        </div>
-        <div class="file-container image-container">
-          <a href="/file/${download_id}" target="_blank" style="padding: 0"><img src="${src}" alt="${fileName}" ${
-      imgWidth > 0 ? `width="${imgWidth}"` : ""
-    } ${imgHeight > 0 ? `height="${imgHeight}"` : ""} />
-      <div class="btn-img-download">
-      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="white">
-      <path d="M17 12v5H3v-5H1v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5z"/>
-      <path d="M10 15l5-6h-4V1H9v8H5l5 6z"/>
-      </svg><p>${formatBytes(file_size)}</p></div></a>
-        </div>
+  const content = `
+    <div class="message-item ${userName == name ? "message-item-self" : ""}">
+      <div class="message-info">
+        <p class="message-name">${name}</p>
+        <p class="message-time">${date}</p>
       </div>
-      `;
-  } else {
-    content = `
-      <div class="message-item ${userName == name ? "message-item-self" : ""}">
-        <div class="message-info">
-          <p class="message-name">${name}</p>
-          <p class="message-time">${date}</p>
-        </div>
-        <div class="file-container">
-          <a href="/file/${download_id}" target="_blank" class="file-download"><svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 30 30" width="30px" height="30px" fill="${
-      name == userName ? "white" : "#4285f4"
-    }">    <path d="M24.707,8.793l-6.5-6.5C18.019,2.105,17.765,2,17.5,2H7C5.895,2,5,2.895,5,4v22c0,1.105,0.895,2,2,2h16c1.105,0,2-0.895,2-2 V9.5C25,9.235,24.895,8.981,24.707,8.793z M18,10c-0.552,0-1-0.448-1-1V3.904L23.096,10H18z"/></svg><p>${fileName}</p><div class="btn-file-download"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="${
-      name == userName ? "white" : "#4285f4"
-    }" >
-    <path d="M17 12v5H3v-5H1v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5z"/>
-    <path d="M10 15l5-6h-4V1H9v8H5l5 6z"/>
-    </svg><p>${formatBytes(file_size)}</p></div></a>
-        
-        </div>
+      <div class="file-container">
+        <div class="file-download" id="file-${downloadId}"><svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 30 30" width="30px" height="30px" fill="${
+    name == userName ? "white" : "#4285f4"
+  }">    <path d="M24.707,8.793l-6.5-6.5C18.019,2.105,17.765,2,17.5,2H7C5.895,2,5,2.895,5,4v22c0,1.105,0.895,2,2,2h16c1.105,0,2-0.895,2-2 V9.5C25,9.235,24.895,8.981,24.707,8.793z M18,10c-0.552,0-1-0.448-1-1V3.904L23.096,10H18z"/></svg><p>${fileName}</p><div class="btn-file-download"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="${
+    name == userName ? "white" : "#4285f4"
+  }" >
+  <path d="M17 12v5H3v-5H1v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5z"/>
+  <path d="M10 15l5-6h-4V1H9v8H5l5 6z"/>
+  </svg><p>${formatBytes(fileSize)}</p></div></div>
+      
       </div>
-      `;
-  }
+    </div>
+    `;
   messages.innerHTML += content;
   messages.scrollTop = messages.scrollHeight;
+  document
+    .getElementById(`file-${downloadId}`)
+    .addEventListener("click", (_) => {
+      downloadFile(`file/${downloadId}`, fileName);
+    });
 };
 
 function formatBytes(bytes) {
@@ -246,23 +218,14 @@ socketio.on("connect", (_) => {
       }
       createMessage(message[1], content, message[3]);
     } else if (message[0] == "file") {
-      let base64String = data.data;
-      if (roomType == "secured") {
-        decrypted = CryptoJS.AES.decrypt(data.data, roomPassword);
-        base64String =
-          "data:{{element.fileType}};base64," +
-          decrypted.toString(CryptoJS.enc.Utf8);
-      }
       createFileItem(
         message[1],
-        base64String,
+        message[2],
         message[3],
         message[4],
         message[5],
         message[6],
-        message[7],
-        message[8],
-        message[9]
+        message[7]
       );
     }
   }
@@ -292,16 +255,31 @@ const sendMessage = (event) => {
   event.preventDefault();
   if (fileInput.files.length > 0) {
     const file = fileInput.files[0];
-    let data = file;
     if (roomType == "secured") {
-      data = CryptoJS.AES.encrypt(file, roomPassword).toString();
+      var reader = new FileReader();
+      reader.readAsBinaryString(file);
+      reader.onload = function (evt) {
+        const encrypted = CryptoJS.AES.encrypt(
+          evt.target.result,
+          roomPassword
+        ).toString();
+        socketio.emit("message", {
+          data: encrypted.toString(),
+          type: "file",
+          fileType: file.type,
+          fileName: file.name,
+          fileSize: file.size,
+        });
+      };
+    } else {
+      socketio.emit("message", {
+        data: file,
+        type: "file",
+        fileType: file.type,
+        fileName: file.name,
+        fileSize: file.size,
+      });
     }
-    socketio.emit("message", {
-      data: data,
-      type: "file",
-      fileType: file.type,
-      fileName: file.name,
-    });
     fileInput.value = "";
     fileInput.type = "";
     fileInput.type = "file";
@@ -383,3 +361,22 @@ const addMemberItem = (name) => {
 membersButton.addEventListener("click", () => {
   membersPopup.classList.toggle("dp-none");
 });
+
+async function downloadFile(url) {
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    const decrypted = CryptoJS.AES.decrypt(data.file, roomPassword);
+    const base64String = btoa(decrypted.toString(CryptoJS.enc.Utf8));
+    const downloadLink = document.createElement("a");
+    downloadLink.href = `data:${data["content-type"]};base64,${base64String}`;
+    downloadLink.download = data.fileName;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    setTimeout(() => {
+      document.body.removeChild(downloadLink);
+    }, 100);
+  } catch (error) {
+    console.error("Error downloading the file:", error.message);
+  }
+}

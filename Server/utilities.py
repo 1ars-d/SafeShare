@@ -9,7 +9,6 @@ from flask_socketio import emit
 import base64
 import datetime
 import sqlite3
-from CONSTANTS import REMOVE_ROOM_AFTER
 
 # Encryption
 import hashlib
@@ -100,11 +99,11 @@ def get_base64_size(base64_string):  # currently unused
     return size_in_bytes
 
 
-def check_rooms():
-    """ conn = sqlite3.connect("ROOMS_db.sqlite")
+def check_rooms(REMOVE_ROOM_AFTER):
+    conn = sqlite3.connect("ROOMS_db.sqlite")
     cur = conn.cursor()
     due_time = (datetime.datetime.now() -
-                datetime.timedelta(minutes=REMOVE_ROOM_AFTER)).isoformat()
+                datetime.timedelta(minutes=int(REMOVE_ROOM_AFTER))).isoformat()
     cur.execute(f'SELECT code FROM rooms WHERE timestamp < "{due_time}"')
     results = cur.fetchall()
     for code in results:
@@ -113,7 +112,7 @@ def check_rooms():
         cur.execute(f'DELETE FROM logs WHERE room="{code[0]}"')
         cur.execute(f'DELETE FROM files WHERE room="{code[0]}"')
     conn.commit()
-    conn.close() """
+    conn.close()
     pass
 
 
@@ -130,18 +129,10 @@ def get_history(room):
         history.append(
             {"content": message[0], "content_type": message[1], "author": message[2], "timestamp": message[4], "type": "message"})
     files = cur.execute(
-        f'SELECT data, file_type, file_name, author, room, timestamp, id, width, height FROM files WHERE room="{room}"').fetchall()
+        f'SELECT data, file_type, file_name, author, room, timestamp, id FROM files WHERE room="{room}"').fetchall()
     for file in files:
-        content = ""
-        if (file[1].split("/")[0] == "image" and file[2].lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif'))):
-            content = base64.b64encode(downscale_image(base64.b64decode(
-                file[0].decode()), file[1].split("/")[1], .1).getvalue()).decode("utf-8")
-        history.append({"content": content, "fileType": file[1],
-                       "fileName": file[2], "timestamp": file[5], "type": "file", "author": file[3], "fileId": file[6],  "fileSize": get_base64_size(file[0]), "imageWidth": file[7], "imageHeight": file[8]})
-    """ logs = cur.execute(
-        f'SELECT content, timestamp, room FROM logs WHERE room="{room}"').fetchall()
-    for log in logs:
-        history.append({"content": log[0], "timestamp": log[1], "type": "log"}) """
+        history.append({"content": "", "fileType": file[1],
+                       "fileName": file[2], "timestamp": file[5], "type": "file", "author": file[3], "fileId": file[6],  "fileSize": 0})
     history.sort(key=lambda x: x["timestamp"])
     conn.close()
     return history
