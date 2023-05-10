@@ -19,8 +19,6 @@ const roomPasswordText = document.getElementById("room-password-text");
 
 let roomPassword;
 
-console.log(messagesFromBackend);
-
 // create qr code
 new QRCode(qrImageContainer, `${window.location.origin}/join/${roomCode}`);
 
@@ -60,9 +58,9 @@ const setCountdown = () => {
   const seconds = Math.max(0, Math.floor((timeRemaining % (1000 * 60)) / 1000));
 
   // Check if room is expired
-  /* if (minutes == 0 && seconds == 0) {
+  if (closeRoom == "True" && minutes == 0 && seconds == 0) {
     window.location.replace("/");
-  } */
+  }
 
   // display the countdown
   countdown.innerHTML = `${minutes.toLocaleString(undefined, {
@@ -124,7 +122,10 @@ const createFileItem = (
   document
     .getElementById(`file-${downloadId}`)
     .addEventListener("click", (_) => {
-      downloadFile(`file/${downloadId}`, fileName);
+      downloadFile(
+        `file/${downloadId}/${roomType == "secured" ? "encrypted" : "open"}`,
+        fileName
+      );
     });
 };
 
@@ -366,8 +367,11 @@ async function downloadFile(url) {
   try {
     const response = await fetch(url);
     const data = await response.json();
-    const decrypted = CryptoJS.AES.decrypt(data.file, roomPassword);
-    const base64String = btoa(decrypted.toString(CryptoJS.enc.Utf8));
+    let base64String = data.file;
+    if (roomType == "secured") {
+      const decrypted = CryptoJS.AES.decrypt(data.file, roomPassword);
+      base64String = btoa(decrypted.toString(CryptoJS.enc.Utf8));
+    }
     const downloadLink = document.createElement("a");
     downloadLink.href = `data:${data["content-type"]};base64,${base64String}`;
     downloadLink.download = data.fileName;

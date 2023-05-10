@@ -35,47 +35,12 @@ if env_config["REMOVE_ROOMS"] == "True":
     sched.start()
 
 
-@app.route("/", methods=["POST", "GET"])  # Homepage Route
+@app.route("/", methods=["POST", "GET"])
 def home():
     session.clear()
-    """ if request.method == "POST":  # -> Reads form and either redirects user to specific room or creates a new one
-        name = request.form.get("name", "")
-        code = request.form.get("code", "")
-        join = request.form.get("join", False)
-        create = request.form.get("create", False)
-        if not name:    # name empty
-            return render_template("home.html", error="Please enter a name.", code=code, name=name)
-        if join != False and not code:  # code empty
-            return render_template("home.html", error="Please enter a room code.", code=code, name=name)
-        room = code
-        conn, cur = get_db_connecton()
-        if create != False:   # create was pressed
-            room = generate_unique_code(5)
-            timestamp = datetime.datetime.now().isoformat()
-            cur.execute(
-                "INSERT INTO rooms(code, timestamp) VALUES(?,?)", (room, timestamp))
-            conn.commit()
-        # Room doesn't exist
-        elif not room_exists(room):
-            return render_template("home.html", error="Room does not exist.", code=code, name=name)
-        name_exists = cur.execute(
-            f'SELECT COUNT(1) FROM users WHERE room="{room}" AND name="{name}"').fetchone()[0] != 0
-        if name_exists:
-            return render_template("home.html", error="This username already exists in this room", code=code, name=name)
-        cur.execute(
-            f'INSERT into users (name, room) VALUES(?,?)', (name, room))
-        conn.commit()
-        user_id = cur.execute(
-            f'SELECT id FROM users WHERE room="{room}" AND name="{name}"').fetchone()[0]
-        conn.close()
-        session["room"] = room
-        session["name"] = name
-        session["user_id"] = user_id
-        return redirect(url_for("room")) """
     return render_template("home.html", name="", code="")
 
 
-# Route for specific Room
 @app.route("/room")
 def room():  # Checks if room stored in session exists and provides
     room = session.get("room")
@@ -86,10 +51,9 @@ def room():  # Checks if room stored in session exists and provides
     output_members = get_members(room)
     timestamp = get_room_timestamp(room)
     history = get_history(room)
-    return render_template("room.html", room=room, history=history, timestamp=timestamp, name=name, user_id=user_id, members=output_members, close_time=env_config["REMOVE_ROOMS_AFTER"], room_type=get_room_type(room))
+    return render_template("room.html", room=room, history=history, timestamp=timestamp, name=name, user_id=user_id, members=output_members, close_time=env_config["REMOVE_ROOMS_AFTER"], room_type=get_room_type(room), close_room=env_config["REMOVE_ROOMS"])
 
 
-# Route for room invitations
 @app.route('/join/<string:room>')
 def join_form(room):
     if not room_exists(room):
@@ -97,9 +61,10 @@ def join_form(room):
     return render_template("join.html", room=room)
 
 
-# Route to create secured room
 @app.route('/create-secured/<string:name>/<string:password>')
 def create_secured(name, password):
+    if name == "" or password == "":
+        raise ValueError("Create Secured Room: name or password empty")
     conn, cur = get_db_connecton()
     generated_code = generate_unique_code(5)
     timestamp = datetime.datetime.now().isoformat()
@@ -117,7 +82,6 @@ def create_secured(name, password):
     return redirect(url_for("room"))
 
 
-# Route to create open room
 @app.route('/create-open/<string:name>')
 def create_open(name):
     conn, cur = get_db_connecton()
@@ -136,7 +100,6 @@ def create_open(name):
     return redirect(url_for("room"))
 
 
-# Route to join room
 @app.route('/join/<string:room>/<string:name>/<string:user_id>')
 def join(room, name, user_id):
     if not room_exists(room):
@@ -197,8 +160,8 @@ def join_enter_password(room, name, user_id):
 
 
 # Route to download file stored in database
-@app.route('/file/<string:file_id>')
-def download_file(file_id):
+@app.route('/file/<string:file_id>/<string:save_type>')
+def download_file(file_id, save_type):
     conn = sqlite3.connect("ROOMS_db.sqlite")
     cur = conn.cursor()
     file = cur.execute(
@@ -207,7 +170,7 @@ def download_file(file_id):
         return abort(400, "Record not found")
     conn.close()
     data = {
-        'file': file[0],
+        'file': file[0] if save_type == "encrypted" else base64.b64encode(file[0]).decode('utf-8'),
         'fileSize': 0,
         'content-type': file[1],
         'fileName': file[2],
@@ -252,7 +215,6 @@ def message(data):
     timestamp = datetime.datetime.now().isoformat()
     if data["type"] == "file":
         fileId = shortuuid.uuid()
-        print(data["data"])
         cur.execute(
             "INSERT INTO files(data, file_type, file_name, author, room, timestamp, id) VALUES(?,?,?,?,?,?,?)", (data["data"], data["fileType"], data["fileName"], name, room, timestamp, fileId))
         conn.commit()
@@ -270,4 +232,7 @@ def message(data):
 
 if __name__ == "__main__":
     # Run Server
-    socketio.run(app, debug=True, host="192.168.178.57")
+    # set HOST property in .env:
+    # To Run on localhost leave host empty
+    # To make server available from other devices in same network set HOST to your IPv4
+    socketio.run(app, debug=True, host=env_config["HOST"])
