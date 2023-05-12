@@ -1,7 +1,7 @@
 import dotenv
 
 # Flask
-from flask import Flask, render_template, session, request, redirect, url_for, abort, jsonify
+from flask import Flask, render_template, session, redirect, url_for, abort, jsonify
 from flask_socketio import SocketIO, join_room, leave_room, emit
 
 # Database
@@ -12,7 +12,7 @@ import base64
 import datetime
 
 # Helpers
-from utilities import generate_unique_code, room_exists, setup_db, check_rooms, get_db_connecton, get_history, get_room_timestamp, get_members, downscale_image, get_image_dimensions, send_log, hash_password, get_room_type, check_room_password
+from utilities import generate_unique_code, room_exists, setup_db, check_rooms, get_db_connecton, get_history, get_room_timestamp, get_members, send_log, hash_password, get_room_type, check_room_password
 
 
 # Server Setup
@@ -48,17 +48,16 @@ def room():  # Checks if room stored in session exists and provides
     user_id = session.get("user_id")
     if not room_exists(room):
         return redirect(url_for("home"))
-    output_members = get_members(room)
-    timestamp = get_room_timestamp(room)
-    history = get_history(room)
-    return render_template("room.html", room=room, history=history, timestamp=timestamp, name=name, user_id=user_id, members=output_members, close_time=env_config["REMOVE_ROOMS_AFTER"], room_type=get_room_type(room), close_room=env_config["REMOVE_ROOMS"])
-
-
-@app.route('/join/<string:room>')
-def join_form(room):
-    if not room_exists(room):
-        return redirect(url_for("home"))
-    return render_template("join.html", room=room)
+    return render_template("room.html",
+                            room=room,
+                            history=get_history(room),
+                            timestamp=get_room_timestamp(room),
+                            name=name,
+                            user_id=user_id,
+                            members=get_members(room),
+                            close_time=env_config["REMOVE_ROOMS_AFTER"],
+                            room_type=get_room_type(room),
+                            close_room=env_config["REMOVE_ROOMS"])
 
 
 @app.route('/create-secured/<string:name>/<string:password>')
@@ -228,6 +227,11 @@ def message(data):
         emit("message", {"name": name, "data": content,
                          "timestamp": timestamp, "type": "text"}, to=room)
     conn.close()
+
+@app.errorhandler(Exception) 
+def handle_error(error):
+    print(error)
+    return render_template("home.html", error=error)
 
 
 if __name__ == "__main__":

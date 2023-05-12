@@ -1,4 +1,3 @@
-import io
 import sys
 import os
 
@@ -12,9 +11,6 @@ import sqlite3
 
 # Encryption
 import hashlib
-
-# Image Manipulation
-from PIL import Image
 
 # Others
 from string import ascii_uppercase
@@ -156,16 +152,6 @@ def get_room_timestamp(room):
     return timestamp
 
 
-# Downscale image to supply user with image preview
-def downscale_image(image_data, format, factor):
-    raw = Image.open(io.BytesIO(image_data))
-    image_rescaled = raw.resize(
-        (int(raw.size[0] * factor), int(raw.size[1] * factor)))
-    buffered = io.BytesIO()
-    image_rescaled.save(buffered, format=format)
-    buffered.seek(0)
-    return buffered
-
 
 # returns a list of all members in a room
 def get_members(room):
@@ -178,8 +164,3 @@ def get_members(room):
         output_members.append(member[0])
     return output_members
 
-
-def get_image_dimensions(image_data):
-    width = Image.open(io.BytesIO(image_data)).width
-    height = Image.open(io.BytesIO(image_data)).height
-    return (width, height)
