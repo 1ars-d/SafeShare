@@ -1,4 +1,3 @@
-// This page is called when a user joins via an invite link or qr-codes
 const joinButton = document.getElementById("join");
 const nameInput = document.getElementById("name");
 

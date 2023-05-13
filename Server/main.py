@@ -49,15 +49,15 @@ def room():  # Checks if room stored in session exists and provides
     if not room_exists(room):
         return redirect(url_for("home"))
     return render_template("room.html",
-                            room=room,
-                            history=get_history(room),
-                            timestamp=get_room_timestamp(room),
-                            name=name,
-                            user_id=user_id,
-                            members=get_members(room),
-                            close_time=env_config["REMOVE_ROOMS_AFTER"],
-                            room_type=get_room_type(room),
-                            close_room=env_config["REMOVE_ROOMS"])
+                           room=room,
+                           history=get_history(room),
+                           timestamp=get_room_timestamp(room),
+                           name=name,
+                           user_id=user_id,
+                           members=get_members(room),
+                           close_time=env_config["REMOVE_ROOMS_AFTER"],
+                           room_type=get_room_type(room),
+                           close_room=env_config["REMOVE_ROOMS"])
 
 
 @app.route('/create-secured/<string:name>/<string:password>')
@@ -212,13 +212,20 @@ def message(data):
         return
     conn, cur = get_db_connecton()
     timestamp = datetime.datetime.now().isoformat()
+    # {
+    #      data,
+    #      type,
+    #      fileType
+    #      fileName
+    #      fileSize
+    #  }
     if data["type"] == "file":
         fileId = shortuuid.uuid()
         cur.execute(
-            "INSERT INTO files(data, file_type, file_name, author, room, timestamp, id) VALUES(?,?,?,?,?,?,?)", (data["data"], data["fileType"], data["fileName"], name, room, timestamp, fileId))
+            "INSERT INTO files(data, file_type, file_name, author, room, timestamp, id, file_size) VALUES(?,?,?,?,?,?,?,?)", (data["data"], data["fileType"], data["fileName"], name, room, timestamp, fileId, data["fileSize"]))
         conn.commit()
         emit("message", {"name": name, "data": "",
-                         "timestamp": timestamp, "type": "file", "fileType": data["fileType"], "fileName": data["fileName"], "fileId": fileId, "fileSize": 0}, to=room)
+                         "timestamp": timestamp, "type": "file", "fileType": data["fileType"], "fileName": data["fileName"], "fileId": fileId, "fileSize": data["fileSize"]}, to=room)
     if data["type"] == "text":
         content = data["data"]
         cur.execute(
@@ -228,7 +235,8 @@ def message(data):
                          "timestamp": timestamp, "type": "text"}, to=room)
     conn.close()
 
-@app.errorhandler(Exception) 
+
+@app.errorhandler(Exception)
 def handle_error(error):
     print(error)
     return render_template("home.html", error=error)

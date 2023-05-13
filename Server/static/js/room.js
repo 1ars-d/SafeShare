@@ -1,4 +1,5 @@
 var socketio = io();
+
 const chat = document.getElementById("chat");
 const fileDragOverlay = document.getElementById("file-drag-overlay");
 const fileDragInput = document.getElementById("drag-file-input");
@@ -22,7 +23,7 @@ let roomPassword;
 // create qr code
 new QRCode(qrImageContainer, `${window.location.origin}/join/${roomCode}`);
 
-fileInput.addEventListener("change", (event) => {
+fileInput.addEventListener("change", (_) => {
   var files = fileInput.files;
   var fileSizeMB = files[0].size / 1024 ** 2;
   if (fileSizeMB > 50) {
@@ -62,7 +63,6 @@ const setCountdown = () => {
     window.location.replace("/");
   }
 
-  // display the countdown
   countdown.innerHTML = `${minutes.toLocaleString(undefined, {
     minimumIntegerDigits: 2,
   })}:${seconds.toLocaleString(undefined, {
@@ -89,9 +89,7 @@ const createMessage = (name, message, timestamp) => {
 };
 
 const createFileItem = (
-  name,
-  src,
-  fileType,
+  username,
   fileName,
   timestamp,
   downloadId,
@@ -99,16 +97,18 @@ const createFileItem = (
 ) => {
   const date = formatDate(new Date(timestamp));
   const content = `
-    <div class="message-item ${userName == name ? "message-item-self" : ""}">
+    <div class="message-item ${
+      userName == username ? "message-item-self" : ""
+    }">
       <div class="message-info">
-        <p class="message-name">${name}</p>
+        <p class="message-name">${username}</p>
         <p class="message-time">${date}</p>
       </div>
       <div class="file-container">
         <div class="file-download" id="file-${downloadId}"><svg xmlns="http://www.w3.org/2000/svg"  viewBox="0 0 30 30" width="30px" height="30px" fill="${
-    name == userName ? "white" : "#4285f4"
+    username == userName ? "white" : "#4285f4"
   }">    <path d="M24.707,8.793l-6.5-6.5C18.019,2.105,17.765,2,17.5,2H7C5.895,2,5,2.895,5,4v22c0,1.105,0.895,2,2,2h16c1.105,0,2-0.895,2-2 V9.5C25,9.235,24.895,8.981,24.707,8.793z M18,10c-0.552,0-1-0.448-1-1V3.904L23.096,10H18z"/></svg><p>${fileName}</p><div class="btn-file-download"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="${
-    name == userName ? "white" : "#4285f4"
+    username == userName ? "white" : "#4285f4"
   }" >
   <path d="M17 12v5H3v-5H1v5a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5z"/>
   <path d="M10 15l5-6h-4V1H9v8H5l5 6z"/>
@@ -140,11 +140,6 @@ function formatBytes(bytes) {
     return (bytes / 1073741824).toFixed(2) + " GB";
   }
 }
-
-const createLog = (log, timestamp) => {
-  //const content = `<div class="log-item">${log} (${timestamp})</div>`;
-  //messages.innerHTML += content;
-};
 
 const formatDate = (date) => {
   const months = [
@@ -182,23 +177,12 @@ socketio.on("message", (data) => {
     }
     createMessage(data.name, message, data.timestamp);
   } else if (data.type == "file") {
-    let file = data.data;
-    if (roomType == "secured") {
-      decrypted = CryptoJS.AES.decrypt(data.data, roomPassword);
-      file = decrypted.toString(CryptoJS.enc.Utf8);
-    }
-    const blob = new Blob([file], { type: data.fileType });
-    const objectURL = URL.createObjectURL(blob);
     createFileItem(
       data.name,
-      objectURL,
-      data.fileType,
       data.fileName,
       data.timestamp,
       data.fileId,
-      data.fileSize,
-      data.imageWidth,
-      data.imageHeight
+      data.fileSize
     );
   }
 });
@@ -211,22 +195,20 @@ socketio.on("connect", (_) => {
     roomPasswordText.innerText = roomPassword;
   }
   for (let message of messagesFromBackend) {
-    if (message[0] == "message") {
-      let content = message[2];
+    if (message.type == "message") {
+      let content = message.content;
       if (roomType == "secured") {
-        decrypted = CryptoJS.AES.decrypt(message[2], roomPassword);
+        decrypted = CryptoJS.AES.decrypt(message.content, roomPassword);
         content = decrypted.toString(CryptoJS.enc.Utf8);
       }
-      createMessage(message[1], content, message[3]);
-    } else if (message[0] == "file") {
+      createMessage(message.author, content, message.timestamp);
+    } else if (message.type == "file") {
       createFileItem(
-        message[1],
-        message[2],
-        message[3],
-        message[4],
-        message[5],
-        message[6],
-        message[7]
+        message.author,
+        message.fileName,
+        message.timestamp,
+        message.fileId,
+        message.fileSize
       );
     }
   }
@@ -249,7 +231,7 @@ const addRecentRoom = (code, timestampString) => {
 };
 
 socketio.on("log", (data) => {
-  createLog(data.log, data.timestamp);
+  /* createLog(data.log, data.timestamp); */
 });
 
 const sendMessage = (event) => {

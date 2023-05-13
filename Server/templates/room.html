@@ -233,26 +233,23 @@
 <script type="text/javascript">
   // Get History from backend
   if ("{{element.type}}" == "message") {
-    messagesFromBackend.push([
-      "message",
-      "{{element.author}}",
-      "{{element.content}}",
-      "{{element.timestamp}}",
-      false,
-    ]);
+    messagesFromBackend.push({
+      type: "message",
+      author: "{{element.author}}",
+      content: "{{element.content}}",
+      timestamp: "{{element.timestamp}}",
+    });
   } else if ("{{element.type}}" == "file") {
-    messagesFromBackend.push([
-      "file",
-      "{{element.author}}",
-      "{{element.content}}",
-      "{{element.fileType}}",
-      "{{element.fileName}}",
-      "{{element.timestamp}}",
-      "{{element.fileId}}",
-      "{{element.fileSize}}",
-    ]);
+    messagesFromBackend.push({
+      type: "file",
+      author: "{{element.author}}",
+      fileName: "{{element.fileName}}",
+      timestamp: "{{element.timestamp}}",
+      fileId: "{{element.fileId}}",
+      fileSize: "{{element.fileSize}}",
+    });
   } else if ("{{element.type}}" == "log") {
-    createLog("{{element.content}}", "{{element.timestamp}}");
+    // createLog("{{element.content}}", "{{element.timestamp}}");
   }
 </script>
 {% endfor %} {% endblock %}

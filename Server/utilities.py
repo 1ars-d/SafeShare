@@ -82,7 +82,7 @@ def setup_db():
         cur.execute(
             'CREATE TABLE logs (content TEXT, timestamp TEXT, room TEXT)')
         cur.execute(
-            'CREATE TABLE files (data TEXT, file_type TEXT, file_name TEXT, author TEXT, room TEXT, timestamp TEXT, id TEXT, width INTEGER, height INTEGER)')
+            'CREATE TABLE files (data TEXT, file_type TEXT, file_name TEXT, author TEXT, room TEXT, timestamp TEXT, id TEXT, file_size INTEGER)')
         cur.execute(
             'CREATE TABLE users (name TEXT, id integer primary key, room TEXT)')
     conn.commit()
@@ -107,9 +107,9 @@ def check_rooms(REMOVE_ROOM_AFTER):
         cur.execute(f'DELETE FROM messages WHERE room="{code[0]}"')
         cur.execute(f'DELETE FROM logs WHERE room="{code[0]}"')
         cur.execute(f'DELETE FROM files WHERE room="{code[0]}"')
+        cur.execute(f'DELETE FROM users WHERE room="{code[0]}"')
     conn.commit()
     conn.close()
-    pass
 
 
 # returns a list of messages and files sent in a room
@@ -152,7 +152,6 @@ def get_room_timestamp(room):
     return timestamp
 
 
-
 # returns a list of all members in a room
 def get_members(room):
     conn, cur = get_db_connecton()
@@ -163,4 +162,3 @@ def get_members(room):
     for member in members:
         output_members.append(member[0])
     return output_members
-

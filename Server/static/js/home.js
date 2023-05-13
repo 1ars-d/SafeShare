@@ -38,7 +38,7 @@ const recentRoomList = document.getElementById("recent-room-list");
         <p class="room-item-time" id="${key}-time">${minuteString}</p>
     </a>`;
     setInterval(() => {
-      countdown = document.getElementById(`${key}-time`);
+      const countdown = document.getElementById(`${key}-time`);
       const timeRemaining = targetDate.getTime() - new Date().getTime();
       const minutes = Math.max(
         0,
