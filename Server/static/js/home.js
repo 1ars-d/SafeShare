@@ -6,14 +6,15 @@
 
 const recentRoomList = document.getElementById("recent-room-list");
 
+let currentDate = new Date(startDateString);
+
 // Fetches rooms stored in Localstorage and displays them if they still exist
-(() => {
+const addRoomList = () => {
   const recentRooms = JSON.parse(localStorage.getItem("recent_rooms")) || {};
   for (let key in recentRooms) {
-    const closeTime = 1; // in minutes
+    const closeTime = recentRooms[key].closeTime; // in minutes
     const targetDate = new Date(recentRooms[key].timestamp);
     targetDate.setMinutes(targetDate.getMinutes() + closeTime);
-    const currentDate = new Date();
     const timeRemaining = targetDate.getTime() - currentDate.getTime();
     const minutes = Math.max(
       0,
@@ -39,7 +40,7 @@ const recentRoomList = document.getElementById("recent-room-list");
     </a>`;
     setInterval(() => {
       const countdown = document.getElementById(`${key}-time`);
-      const timeRemaining = targetDate.getTime() - new Date().getTime();
+      const timeRemaining = targetDate.getTime() - currentDate.getTime();
       const minutes = Math.max(
         0,
         Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60))
@@ -59,7 +60,10 @@ const recentRoomList = document.getElementById("recent-room-list");
   if (recentRoomList.innerHTML == "") {
     recentRoomList.innerHTML = "No rooms found";
   }
-})();
+};
+
+addRoomList();
+setInterval(() => currentDate.setSeconds(currentDate.getSeconds() + 1), 1000);
 
 // ---------------------------------------------------------------- //
 // ---------------------------------------------------------------- //

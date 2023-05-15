@@ -70,7 +70,7 @@
       </button>
     </div>
     <div class="top-right">
-      <h2><span id="remaining-time"></span></h2>
+      <h2><span id="remaining-time">00:00</span></h2>
       <button id="btn-close" class="top-action text-button" onclick="onClose()">
         <svg
           enable-background="new 0 0 32 32"
@@ -219,6 +219,7 @@
   const closeRoom = "{{close_room}}"
   const closeTime = {{close_time}}; // in minutes
   const messagesFromBackend = [];
+  const startDateString = "{{server_timestamp}}"
 </script>
 <script
   type="text/javascript"

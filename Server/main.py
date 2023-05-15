@@ -39,7 +39,7 @@ if env_config["REMOVE_ROOMS"] == "True":
 @app.route("/", methods=["POST", "GET"])
 def home():
     session.clear()
-    return render_template("home.html", name="", code="")
+    return render_template("home.html", name="", code="", server_timestamp=fetch_timestamp())
 
 
 @app.route("/room")
@@ -58,7 +58,9 @@ def room():  # Checks if room stored in session exists and provides
                            members=get_members(room),
                            close_time=env_config["REMOVE_ROOMS_AFTER"],
                            room_type=get_room_type(room),
-                           close_room=env_config["REMOVE_ROOMS"])
+                           close_room=env_config["REMOVE_ROOMS"],
+                           server_timestamp=fetch_timestamp()
+                           )
 
 
 @app.route('/create-secured/<string:name>/<string:password>')
@@ -117,7 +119,7 @@ def join(room, name, user_id):
         if user_id == "join":
             return render_template("join.html", room=room, name=name, error="This room doesnt exist")
         else:
-            return render_template("home.html", code=room, name=name, error="This room doesnt exist")
+            return render_template("home.html", code=room, name=name, error="This room doesnt exist", server_timestamp=fetch_timestamp())
     conn, cur = get_db_connecton()
     name_entry = cur.execute(
         f'SELECT id FROM users WHERE room="{room}" AND name="{name}"').fetchone()
@@ -125,7 +127,7 @@ def join(room, name, user_id):
         if user_id == "join":
             return render_template("join.html", room=room, name=name, error="This username already exists in this room")
         else:
-            return render_template("home.html", code=room, name=name, error="This username already exists in this room")
+            return render_template("home.html", code=room, name=name, error="This username already exists in this room", server_timestamp=fetch_timestamp())
     if get_room_type(room) == "secured":
         return redirect(f"/join/enter-password/{room}/{name}/{user_id}")
     if not name_entry:
@@ -144,14 +146,14 @@ def join(room, name, user_id):
 @app.route("/join-secured/<string:room>/<string:name>/<string:user_id>/<string:password>")
 def join_secured(room, name, user_id, password):
     if not room_exists(room) or get_room_type(room) == "open":
-        return render_template("home.html", code=room, name=name, error="This room doesnt exist")
+        return render_template("home.html", code=room, name=name, error="This room doesnt exist", server_timestamp=fetch_timestamp())
     if not check_room_password(room, password):
         return render_template("password-form.html", room=room, name=name, user_id=user_id, error="Incorrect password")
     conn, cur = get_db_connecton()
     name_entry = cur.execute(
         f'SELECT id FROM users WHERE room="{room}" AND name="{name}"').fetchone()
     if name_entry and user_id != str(name_entry[0]):
-        return render_template("home.html", code=room, name=name, error="This username already exists in this room")
+        return render_template("home.html", code=room, name=name, error="This username already exists in this room", server_timestamp=fetch_timestamp())
     if not name_entry:
         cur.execute(
             f'INSERT into users (name, room, has_connected) VALUES(?,?,?)', (name, room, "False"))
@@ -260,4 +262,4 @@ if __name__ == "__main__":
     # set HOST property in .env:
     # To Run on localhost leave host empty
     # To make server available from other devices in same network set HOST to your IPv4
-    socketio.run(app, debug=True, host=env_config["HOST"], threaded=True)
+    socketio.run(app, debug=True, host=env_config["HOST"])

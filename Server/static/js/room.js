@@ -44,20 +44,15 @@ fileInput.addEventListener("change", (_) => {
   }
 });
 
-
 // Room Countdown
 const targetDate = new Date(targetDateString);
 targetDate.setMinutes(targetDate.getMinutes() + closeTime);
 const countdown = document.getElementById("remaining-time");
-let startDate;
-fetch("http://worldtimeapi.org/api/timezone/Europe/Berlin").then(res => res.json().then(dateObject => {
-  console.log(dateObject)
-  startDate = new Date(dateObject["utc_datetime"])
-}))
+
+let startDate = new Date(startDateString);
 
 const setCountdown = () => {
-  if (!startDate) return;
-  currentDate = startDate
+  currentDate = startDate;
   const timeRemaining = targetDate.getTime() - currentDate.getTime();
   const minutes = Math.max(
     0,
@@ -69,17 +64,16 @@ const setCountdown = () => {
   if (closeRoom == "True" && minutes == 0 && seconds == 0) {
     window.location.replace("/");
   }
-
   countdown.innerHTML = `${minutes.toLocaleString(undefined, {
     minimumIntegerDigits: 2,
   })}:${seconds.toLocaleString(undefined, {
     minimumIntegerDigits: 2,
   })}`;
-  startDate.setSeconds(currentDate.getSeconds() - 1)
 };
 
 setCountdown();
-const chatTime = setInterval(setCountdown, 1000);
+setInterval(() => startDate.setSeconds(currentDate.getSeconds() + 1), 1000);
+setInterval(setCountdown, 1000);
 
 const createMessage = (name, message, timestamp) => {
   const date = formatDate(new Date(timestamp));
@@ -232,6 +226,7 @@ const addRecentRoom = (code, timestampString) => {
       timestamp: timestampString,
       type: roomType,
       password: lastTypedPassword,
+      closeTime: closeTime,
     };
     localStorage.setItem("recent_rooms", JSON.stringify(recentRooms));
   }
