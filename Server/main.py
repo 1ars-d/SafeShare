@@ -71,7 +71,9 @@ def create_secured(name, password):
     cur.execute(
         "INSERT INTO rooms(code, timestamp, type, key, salt) VALUES(?,?,?,?,?)", (generated_code, timestamp, "secured", key, salt))
     cur.execute(
-        f'INSERT into users (name, room) VALUES(?,?)', (name, generated_code))
+        f'INSERT into users (name, room, has_connected) VALUES(?,?,?)', (name, generated_code, "True"))
+    cur.execute(
+        "INSERT INTO logs(content, timestamp, room) VALUES(?,?,?)", (f"{name} created room {generated_code}", timestamp, generated_code))
     conn.commit()
     user_id = cur.lastrowid
     conn.close()
@@ -89,7 +91,9 @@ def create_open(name):
     cur.execute(
         "INSERT INTO rooms(code, timestamp, type) VALUES(?,?,?)", (generated_code, timestamp, "open"))
     cur.execute(
-        f'INSERT into users (name, room) VALUES(?,?)', (name, generated_code))
+        f'INSERT into users (name, room, has_connected) VALUES(?,?,?)', (name, generated_code, True))
+    cur.execute(
+        "INSERT INTO logs(content, timestamp, room) VALUES(?,?,?)", (f"{name} created room {generated_code}", timestamp, generated_code))
     conn.commit()
     user_id = cur.lastrowid
     conn.close()
@@ -97,6 +101,13 @@ def create_open(name):
     session["name"] = name
     session["user_id"] = user_id
     return redirect(url_for("room"))
+
+
+@app.route('/join/<string:room>')
+def join_form(room):
+    if not room_exists(room):
+        redirect(url_for("home"))
+    return render_template("join.html", room=room)
 
 
 @app.route('/join/<string:room>/<string:name>/<string:user_id>')
@@ -118,7 +129,7 @@ def join(room, name, user_id):
         return redirect(f"/join/enter-password/{room}/{name}/{user_id}")
     if not name_entry:
         cur.execute(
-            f'INSERT into users (name, room) VALUES(?,?)', (name, room))
+            f'INSERT into users (name, room, has_connected) VALUES(?,?,?)', (name, room, "False"))
     conn.commit()
     user_id = cur.execute(
         f'SELECT id FROM users WHERE room="{room}" AND name="{name}"').fetchone()[0]
@@ -142,7 +153,7 @@ def join_secured(room, name, user_id, password):
         return render_template("home.html", code=room, name=name, error="This username already exists in this room")
     if not name_entry:
         cur.execute(
-            f'INSERT into users (name, room) VALUES(?,?)', (name, room))
+            f'INSERT into users (name, room, has_connected) VALUES(?,?,?)', (name, room, "False"))
     conn.commit()
     user_id = cur.execute(
         f'SELECT id FROM users WHERE room="{room}" AND name="{name}"').fetchone()[0]
@@ -161,8 +172,7 @@ def join_enter_password(room, name, user_id):
 # Route to download file stored in database
 @app.route('/file/<string:file_id>/<string:save_type>')
 def download_file(file_id, save_type):
-    conn = sqlite3.connect("ROOMS_db.sqlite")
-    cur = conn.cursor()
+    conn, cur = get_db_connecton()
     file = cur.execute(
         f'SELECT data, file_type, file_name FROM files WHERE id="{file_id}"').fetchone()
     if not file:
@@ -179,19 +189,29 @@ def download_file(file_id, save_type):
     response.headers.add('Content-Type', 'application/json')
     return response
 
-
 # Creates socket connection when user joins
+
+
 @socketio.on("connect")
 def connect(_):
     room = session.get("room")
     name = session.get("name")
+    user_id = session.get("user_id")
     if not room or not name:
         return
     if not room_exists(room):
         leave_room(room)
         return
     join_room(room)
-    send_log(f"{name} joined the room.", room)
+    conn, cur = get_db_connecton()
+    user = cur.execute(
+        f'SELECT has_connected FROM users WHERE id="{user_id}"').fetchone()
+    if user[0] == "False":
+        send_log(f"{name} joined the room.", room)
+        cur.execute(
+            f'UPDATE users SET has_connected = "True" WHERE id="{user_id}"')
+        conn.commit()
+    conn.close()
 
 
 # Detach socket connection when user leaves
@@ -200,7 +220,6 @@ def disconnect():
     room = session.get("room")
     name = session.get("name")
     leave_room(room)
-    send_log(f"{name} left the room.", room)
 
 
 # Called when user sends a message from the frontend -> content is stored in database and distributed to other users
@@ -234,12 +253,6 @@ def message(data):
         emit("message", {"name": name, "data": content,
                          "timestamp": timestamp, "type": "text"}, to=room)
     conn.close()
-
-
-@app.errorhandler(Exception)
-def handle_error(error):
-    print(error)
-    return render_template("home.html", error=error)
 
 
 if __name__ == "__main__":

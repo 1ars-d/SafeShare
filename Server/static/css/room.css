@@ -83,7 +83,6 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  padding: 0 10px;
   border-radius: 2px;
 }
 
@@ -154,6 +153,12 @@
   display: flex;
   gap: 10px;
   align-items: center;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.file-download:hover {
+  opacity: 0.8;
 }
 
 .message-info {

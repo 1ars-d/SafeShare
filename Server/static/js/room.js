@@ -230,8 +230,14 @@ const addRecentRoom = (code, timestampString) => {
   localStorage.removeItem("last_typed_password");
 };
 
+const createLogItem = (content, timestamp) => {
+  messages.innerHTML += `<p>${content} - ${formatDate(
+    new Date(timestamp)
+  )}</p>`;
+};
+
 socketio.on("log", (data) => {
-  /* createLog(data.log, data.timestamp); */
+  createLogItem(data.log, data.timestamp);
 });
 
 const sendMessage = (event) => {

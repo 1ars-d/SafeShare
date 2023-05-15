@@ -249,7 +249,7 @@
       fileSize: "{{element.fileSize}}",
     });
   } else if ("{{element.type}}" == "log") {
-    // createLog("{{element.content}}", "{{element.timestamp}}");
+    createLogItem("{{element.content}}", "{{element.timestamp}}");
   }
 </script>
 {% endfor %} {% endblock %}

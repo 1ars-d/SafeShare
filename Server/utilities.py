@@ -84,7 +84,7 @@ def setup_db():
         cur.execute(
             'CREATE TABLE files (data TEXT, file_type TEXT, file_name TEXT, author TEXT, room TEXT, timestamp TEXT, id TEXT, file_size INTEGER)')
         cur.execute(
-            'CREATE TABLE users (name TEXT, id integer primary key, room TEXT)')
+            'CREATE TABLE users (name TEXT, id integer primary key, room TEXT, has_connected TEXT)')
     conn.commit()
     conn.close()
 
@@ -125,10 +125,14 @@ def get_history(room):
         history.append(
             {"content": message[0], "content_type": message[1], "author": message[2], "timestamp": message[4], "type": "message"})
     files = cur.execute(
-        f'SELECT data, file_type, file_name, author, room, timestamp, id FROM files WHERE room="{room}"').fetchall()
+        f'SELECT data, file_type, file_name, author, room, timestamp, id, file_size FROM files WHERE room="{room}"').fetchall()
     for file in files:
         history.append({"content": "", "fileType": file[1],
-                       "fileName": file[2], "timestamp": file[5], "type": "file", "author": file[3], "fileId": file[6],  "fileSize": 0})
+                       "fileName": file[2], "timestamp": file[5], "type": "file", "author": file[3], "fileId": file[6],  "fileSize": file[7]})
+    logs = cur.execute(
+        f'SELECT content, timestamp FROM logs WHERE room="{room}"').fetchall()
+    for log in logs:
+        history.append({"type": "log", "content": log[0], "timestamp": log[1]})
     history.sort(key=lambda x: x["timestamp"])
     conn.close()
     return history
