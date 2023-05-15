@@ -7,6 +7,7 @@ from flask_socketio import SocketIO, join_room, leave_room, emit
 # Database
 import sqlite3
 from apscheduler.schedulers.background import BackgroundScheduler
+import requests
 import shortuuid
 import base64
 import datetime
@@ -259,4 +260,4 @@ if __name__ == "__main__":
     # set HOST property in .env:
     # To Run on localhost leave host empty
     # To make server available from other devices in same network set HOST to your IPv4
-    socketio.run(app, debug=True, host=env_config["HOST"])
+    socketio.run(app, debug=True, host=env_config["HOST"], threaded=True)

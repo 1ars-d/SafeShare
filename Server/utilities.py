@@ -20,10 +20,7 @@ import random
 import requests
 
 def fetch_timestamp():
-    headers = {
-'Content-Type': 'application/json',
-}
-    res = requests.get('http://worldtimeapi.org/api/timezone/Europe/Berlin', headers=headers)
+    res = requests.get('http://worldtimeapi.org/api/timezone/Europe/Berlin')
     response = res.json()
     return response["utc_datetime"]
 
