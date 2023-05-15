@@ -44,13 +44,20 @@ fileInput.addEventListener("change", (_) => {
   }
 });
 
+
 // Room Countdown
 const targetDate = new Date(targetDateString);
 targetDate.setMinutes(targetDate.getMinutes() + closeTime);
 const countdown = document.getElementById("remaining-time");
+let startDate;
+fetch("http://worldtimeapi.org/api/timezone/Europe/Berlin").then(res => res.json().then(dateObject => {
+  console.log(dateObject)
+  startDate = new Date(dateObject["utc_datetime"])
+}))
 
 const setCountdown = () => {
-  const currentDate = new Date();
+  if (!startDate) return;
+  currentDate = startDate
   const timeRemaining = targetDate.getTime() - currentDate.getTime();
   const minutes = Math.max(
     0,
@@ -68,6 +75,7 @@ const setCountdown = () => {
   })}:${seconds.toLocaleString(undefined, {
     minimumIntegerDigits: 2,
   })}`;
+  startDate.setSeconds(currentDate.getSeconds() - 1)
 };
 
 setCountdown();

@@ -12,7 +12,7 @@ import base64
 import datetime
 
 # Helpers
-from utilities import generate_unique_code, room_exists, setup_db, check_rooms, get_db_connecton, get_history, get_room_timestamp, get_members, send_log, hash_password, get_room_type, check_room_password
+from utilities import generate_unique_code, room_exists, setup_db, check_rooms, get_db_connecton, get_history, get_room_timestamp, get_members, send_log, hash_password, get_room_type, check_room_password, fetch_timestamp
 
 
 # Server Setup
@@ -66,7 +66,7 @@ def create_secured(name, password):
         raise ValueError("Create Secured Room: name or password empty")
     conn, cur = get_db_connecton()
     generated_code = generate_unique_code(5)
-    timestamp = datetime.datetime.now().isoformat()
+    timestamp = fetch_timestamp()
     salt, key = hash_password(password)
     cur.execute(
         "INSERT INTO rooms(code, timestamp, type, key, salt) VALUES(?,?,?,?,?)", (generated_code, timestamp, "secured", key, salt))
@@ -87,7 +87,7 @@ def create_secured(name, password):
 def create_open(name):
     conn, cur = get_db_connecton()
     generated_code = generate_unique_code(5)
-    timestamp = datetime.datetime.now().isoformat()
+    timestamp = fetch_timestamp()
     cur.execute(
         "INSERT INTO rooms(code, timestamp, type) VALUES(?,?,?)", (generated_code, timestamp, "open"))
     cur.execute(
@@ -189,9 +189,8 @@ def download_file(file_id, save_type):
     response.headers.add('Content-Type', 'application/json')
     return response
 
+
 # Creates socket connection when user joins
-
-
 @socketio.on("connect")
 def connect(_):
     room = session.get("room")
@@ -230,7 +229,7 @@ def message(data):
     if not room_exists(room):
         return
     conn, cur = get_db_connecton()
-    timestamp = datetime.datetime.now().isoformat()
+    timestamp = fetch_timestamp()
     # {
     #      data,
     #      type,

@@ -16,6 +16,17 @@ import hashlib
 from string import ascii_uppercase
 import random
 
+# API Requests
+import requests
+
+def fetch_timestamp():
+    headers = {
+'Content-Type': 'application/json',
+}
+    res = requests.get('http://worldtimeapi.org/api/timezone/Europe/Berlin', headers=headers)
+    response = res.json()
+    return response["utc_datetime"]
+
 
 def hash_password(password):
     salt = os.urandom(32)
