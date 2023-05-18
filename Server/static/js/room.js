@@ -86,7 +86,7 @@ const createMessage = (name, message, timestamp) => {
       <p class="message-content">${message}</p>
     </div>
     `;
-  messages.innerHTML += content;
+  messages.insertAdjacentHTML("beforeend", content);
   messages.scrollTop = messages.scrollHeight;
 };
 
@@ -119,11 +119,12 @@ const createFileItem = (
       </div>
     </div>
     `;
-  messages.innerHTML += content;
+  messages.insertAdjacentHTML("beforeend", content);
   messages.scrollTop = messages.scrollHeight;
   document
     .getElementById(`file-${downloadId}`)
     .addEventListener("click", (_) => {
+      console.log("hhelo");
       downloadFile(
         `file/${downloadId}/${roomType == "secured" ? "encrypted" : "open"}`,
         fileName
@@ -194,7 +195,7 @@ socketio.on("connect", (_) => {
   const recentRooms = JSON.parse(localStorage.getItem("recent_rooms")) || {};
   if (recentRooms[roomCode].type == "secured") {
     roomPassword = recentRooms[roomCode].password;
-    roomPasswordText.innerText = roomPassword;
+    roomPasswordText.innerText += ` ${roomPassword}`;
   }
   for (let message of messagesFromBackend) {
     if (message.type == "message") {
@@ -212,6 +213,8 @@ socketio.on("connect", (_) => {
         message.fileId,
         message.fileSize
       );
+    } else if (message.type == "log") {
+      createLogItem(message.content, message.timestamp);
     }
   }
 });
@@ -234,9 +237,10 @@ const addRecentRoom = (code, timestampString) => {
 };
 
 const createLogItem = (content, timestamp) => {
-  messages.innerHTML += `<p>${content} - ${formatDate(
-    new Date(timestamp)
-  )}</p>`;
+  messages.insertAdjacentHTML(
+    "beforeend",
+    `<p>${content} - ${formatDate(new Date(timestamp))}</p>`
+  );
 };
 
 socketio.on("log", (data) => {
@@ -343,19 +347,21 @@ const truncate = (str, n) => {
 };
 
 const addMemberItem = (name) => {
-  membersPopup.innerHTML += `<p class="${
-    name == userName ? "primary-color" : ""
-  }">
+  membersPopup.insertAdjacentHTML(
+    "beforeend",
+    `<p class="${name == userName ? "primary-color" : ""}">
     ${name}
-  </p>`;
+  </p>`
+  );
 };
 
 membersButton.addEventListener("click", () => {
   membersPopup.classList.toggle("dp-none");
 });
 
-async function downloadFile(url) {
+async function downloadFile(url, fileName) {
   try {
+    const removeLoader = createLoader(fileName);
     const response = await fetch(url);
     const data = await response.json();
     let base64String = data.file;
@@ -370,8 +376,36 @@ async function downloadFile(url) {
     downloadLink.click();
     setTimeout(() => {
       document.body.removeChild(downloadLink);
+      removeLoader();
     }, 100);
   } catch (error) {
     console.error("Error downloading the file:", error.message);
   }
 }
+
+const createLoader = (fileName) => {
+  const loaderContainer = document.createElement("div");
+  loaderContainer.classList.add("loader-container");
+
+  const loader = document.createElement("div");
+  loader.classList.add("loader");
+
+  const text = document.createElement("p");
+  text.innerText = "Downloading";
+
+  const nameText = document.createElement("span");
+  nameText.innerText = fileName;
+
+  loaderContainer.append(text);
+  loaderContainer.append(nameText);
+  loaderContainer.append(loader);
+
+  document.body.append(loaderContainer);
+
+  return () => {
+    loaderContainer.style.animation = "loader-remove 0.2s ease-in-out forwards";
+    setTimeout(() => {
+      loaderContainer.remove();
+    }, 300);
+  };
+};

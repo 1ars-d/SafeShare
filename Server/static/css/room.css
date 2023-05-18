@@ -355,9 +355,41 @@
   pointer-events: none;
 }
 
+.password-popup {
+  position: absolute;
+  z-index: 10000;
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  top: 70px;
+  left: 0;
+  background-color: white;
+  font-size: 17px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  padding: 10px;
+  border-radius: 3px;
+  color: var(--text-color);
+  min-width: 200px;
+  text-align: left;
+  pointer-events: none;
+}
+
+.password-popup p {
+  font-size: 20px;
+}
+
+#btn-password {
+  position: relative;
+}
+
+#btn-password:hover .password-popup {
+  display: flex !important;
+}
+
 .room-header-code {
   user-select: none;
   cursor: default;
+  font-size: clamp(1.2rem, 2.5vw, 1.7rem);
 }
 
 #btn-qr {
@@ -404,10 +436,12 @@
 
 #remaining-time {
   font-weight: lighter;
+  font-size: clamp(1.3rem, 2.5vw, 1.5rem);
 }
 
 .room-code {
   font-weight: normal;
+  text-transform: uppercase;
 }
 
 .btn-img-download {
@@ -425,6 +459,11 @@
   border-radius: 20px;
   min-width: 120px;
   font-size: 14px;
+}
+
+.file-download p {
+  pointer-events: none;
+  user-select: none;
 }
 
 .btn-file-download {

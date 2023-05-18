@@ -178,6 +178,7 @@
   color: var(--main-color);
   font-size: 18px;
   pointer-events: none;
+  text-transform: uppercase;
 }
 
 .room-item-time {
