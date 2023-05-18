@@ -10,8 +10,10 @@
 .messages {
   scroll-behavior: smooth;
   overflow-y: scroll;
+  overflow-x: hidden;
   flex: 1;
   width: 95%;
+  max-width: 95%;
   padding-top: 20px;
   display: flex;
   flex-direction: column;
@@ -58,6 +60,43 @@
   background-color: rgba(0, 0, 0, 0.025);
 }
 
+.message-sending::after {
+  width: 50% !important;
+  transition: all 2s ease-in-out;
+}
+
+.message-sent::after {
+  width: 100% !important;
+  transition: all 0.3s ease-in-out !important;
+  animation: send-indicator-fade-out 0.5s ease-in-out forwards 0.3s;
+}
+
+@keyframes send-indicator-fade-out {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.message-input-container::after {
+  content: "";
+  display: inline-block;
+  position: absolute;
+  width: 0;
+  height: 3px;
+  border-radius: 10px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background: var(--main-color);
+  pointer-events: none;
+  top: 4px;
+  left: 0;
+  transform-origin: left;
+}
+
 #add-btn {
   height: 100%;
   padding-top: 0;
@@ -91,6 +130,10 @@
   background-color: var(--main-color);
 }
 
+.file-download p {
+  overflow-wrap: anywhere;
+}
+
 .message-item-self .file-container {
   color: white;
   background-color: var(--main-color);
@@ -106,6 +149,7 @@
   padding: 10px;
   color: var(--text-color);
   width: fit-content;
+  overflow-wrap: anywhere;
 }
 
 .file-container {

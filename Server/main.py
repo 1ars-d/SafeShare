@@ -95,7 +95,7 @@ def create_secured(name, password):
     )
     cur.execute(
         "INSERT INTO logs(content, timestamp, room) VALUES(?,?,?)",
-        (f"{name} created room {generated_code}", timestamp, generated_code),
+        (f"{name} created room {generated_code.upper()}", timestamp, generated_code),
     )
     conn.commit()
     user_id = cur.lastrowid
@@ -289,6 +289,7 @@ def connect(_):
         send_log(f"{name} joined the room.", room)
         cur.execute(f'UPDATE users SET has_connected = "True" WHERE id="{user_id}"')
         conn.commit()
+        emit("join", get_members(room), to=room)
     conn.close()
 
 

@@ -13,6 +13,9 @@ const fileInput = document.getElementById("file-select");
 const form = document.getElementById("message-form");
 
 const messageInput = document.getElementById("message");
+const messageInputContainer = document.getElementById(
+  "message-input-container"
+);
 const filePreview = document.getElementById("file-preview");
 const filePreviewText = document.getElementById("file-preview-text");
 const qrImageContainer = document.getElementById("qr-image");
@@ -171,6 +174,11 @@ const formatDate = (date) => {
   return `${formattedTime} ${formattedDate}`;
 };
 
+socketio.on("join", (members) => {
+  membersPopup.innerHTML = "";
+  members.forEach((member) => addMemberItem(member));
+});
+
 socketio.on("message", (data) => {
   if (data.type == "text") {
     let message = data.data;
@@ -247,9 +255,18 @@ socketio.on("log", (data) => {
   createLogItem(data.log, data.timestamp);
 });
 
+const messageSendCallback = () => {
+  messageInputContainer.classList.remove("message-sending");
+  messageInputContainer.classList.add("message-sent");
+  setTimeout(() => {
+    messageInputContainer.classList.remove("message-sent");
+  }, 800);
+};
+
 const sendMessage = (event) => {
   event.preventDefault();
   if (fileInput.files.length > 0) {
+    messageInputContainer.classList.add("message-sending");
     const file = fileInput.files[0];
     if (roomType == "secured") {
       var reader = new FileReader();
@@ -259,22 +276,30 @@ const sendMessage = (event) => {
           evt.target.result,
           roomPassword
         ).toString();
-        socketio.emit("message", {
-          data: encrypted.toString(),
+        socketio.emit(
+          "message",
+          {
+            data: encrypted.toString(),
+            type: "file",
+            fileType: file.type,
+            fileName: file.name,
+            fileSize: file.size,
+          },
+          messageSendCallback
+        );
+      };
+    } else {
+      socketio.emit(
+        "message",
+        {
+          data: file,
           type: "file",
           fileType: file.type,
           fileName: file.name,
           fileSize: file.size,
-        });
-      };
-    } else {
-      socketio.emit("message", {
-        data: file,
-        type: "file",
-        fileType: file.type,
-        fileName: file.name,
-        fileSize: file.size,
-      });
+        },
+        messageSendCallback
+      );
     }
     fileInput.value = "";
     fileInput.type = "";
@@ -284,14 +309,19 @@ const sendMessage = (event) => {
   } else {
     const message = document.getElementById("message");
     if (message.value == "") return;
+    messageInputContainer.classList.add("message-sending");
     let data = message.value;
     if (roomType == "secured") {
       data = CryptoJS.AES.encrypt(message.value, roomPassword).toString();
     }
-    socketio.emit("message", {
-      data: data,
-      type: "text",
-    });
+    socketio.emit(
+      "message",
+      {
+        data: data,
+        type: "text",
+      },
+      messageSendCallback
+    );
   }
   message.value = "";
   message.blur();

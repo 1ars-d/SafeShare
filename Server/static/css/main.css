@@ -16,19 +16,9 @@
   --text-color: #22292f;
 }
 
-.messages::-webkit-scrollbar {
-  display: none;
-}
-
 ::selection {
   background-color: var(--secondary-color);
   color: white;
-}
-
-/* Hide scrollbar for IE, Edge and Firefox */
-.messages {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
 }
 
 div,
@@ -328,4 +318,5 @@ button:active {
   color: var(--main-color);
   font-weight: bold;
   margin-right: 5px;
+  overflow-wrap: anywhere;
 }

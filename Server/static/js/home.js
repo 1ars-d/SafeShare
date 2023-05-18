@@ -33,11 +33,17 @@ const addRoomList = () => {
     })}:${seconds.toLocaleString(undefined, {
       minimumIntegerDigits: 2,
     })}`;
-    const link = `/join/${key}/${recentRooms[key].username}/${recentRooms[key].userId}`;
-    recentRoomList.innerHTML += `<a class="room-item" href="${link}" >
+    const link =
+      recentRooms[key].type == "secured"
+        ? `/join-secured/${key}/${recentRooms[key].username}/${recentRooms[key].userId}/${recentRooms[key].password}`
+        : `/join/${key}/${recentRooms[key].username}/${recentRooms[key].userId}`;
+    recentRoomList.insertAdjacentHTML(
+      "beforeend",
+      `<a class="room-item" href="${link}" >
         <p class="room-item-label">${key}</p>
         <p class="room-item-time" id="${key}-time">${minuteString}</p>
-    </a>`;
+      </a>`
+    );
     setInterval(() => {
       const countdown = document.getElementById(`${key}-time`);
       const timeRemaining = targetDate.getTime() - currentDate.getTime();
