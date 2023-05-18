@@ -103,7 +103,7 @@ const createFileItem = (
       userName == username ? "message-item-self" : ""
     }">
       <div class="message-info">
-        <p class="message-name">${username}</p>
+        <p class="message-name">@${username}</p>
         <p class="message-time">${date}</p>
       </div>
       <div class="file-container">

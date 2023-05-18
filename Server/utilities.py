@@ -13,7 +13,7 @@ import sqlite3
 import hashlib
 
 # Others
-from string import ascii_uppercase
+from string import ascii_lowercase
 import random
 
 
@@ -36,7 +36,7 @@ def generate_unique_code(length):
     while True:
         code = ""
         for _ in range(length):
-            code += random.choice(ascii_uppercase)
+            code += random.choice(ascii_lowercase)
         if not room_exists(code):
             break
     return code
@@ -44,16 +44,17 @@ def generate_unique_code(length):
 
 def room_exists(room):
     conn, cur = get_db_connecton()
-    exists = cur.execute(
-        f'SELECT COUNT(1) FROM rooms WHERE code="{room}"').fetchone()[0] != 0
+    exists = (
+        cur.execute(f'SELECT COUNT(1) FROM rooms WHERE code="{room}"').fetchone()[0]
+        != 0
+    )
     conn.close()
     return exists
 
 
 def get_room_type(room):
     conn, cur = get_db_connecton()
-    room_type = cur.execute(
-        f'SELECT type FROM rooms WHERE code="{room}"').fetchone()[0]
+    room_type = cur.execute(f'SELECT type FROM rooms WHERE code="{room}"').fetchone()[0]
     conn.close()
     return room_type
 
@@ -61,10 +62,12 @@ def get_room_type(room):
 def check_room_password(room, password_to_check):
     conn, cur = get_db_connecton()
     room_data = cur.execute(
-        f'SELECT key, salt FROM rooms WHERE code="{room}"').fetchone()
+        f'SELECT key, salt FROM rooms WHERE code="{room}"'
+    ).fetchone()
     conn.close()
     new_key = hashlib.pbkdf2_hmac(
-        "sha256", password_to_check.encode("utf-8"), room_data[1], 100000)
+        "sha256", password_to_check.encode("utf-8"), room_data[1], 100000
+    )
     return new_key == room_data[0]
 
 
@@ -77,18 +80,22 @@ def setup_db():
     cur = conn.cursor()
     # Check if table rooms exists
     cur.execute(
-        ''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='rooms' ''')
+        """ SELECT count(name) FROM sqlite_master WHERE type='table' AND name='rooms' """
+    )
     if cur.fetchone()[0] != 1:
         cur.execute(
-            'CREATE TABLE rooms (code TEXT, timestamp TEXT, type TEXT, key BINARY(128), salt BINARY(32))')
+            "CREATE TABLE rooms (code TEXT, timestamp TEXT, type TEXT, key BINARY(128), salt BINARY(32))"
+        )
         cur.execute(
-            'CREATE TABLE messages (content TEXT, content_type TEXT, author TEXT, room TEXT, timestamp TEXT)')
+            "CREATE TABLE messages (content TEXT, content_type TEXT, author TEXT, room TEXT, timestamp TEXT)"
+        )
+        cur.execute("CREATE TABLE logs (content TEXT, timestamp TEXT, room TEXT)")
         cur.execute(
-            'CREATE TABLE logs (content TEXT, timestamp TEXT, room TEXT)')
+            "CREATE TABLE files (data TEXT, file_type TEXT, file_name TEXT, author TEXT, room TEXT, timestamp TEXT, id TEXT, file_size INTEGER)"
+        )
         cur.execute(
-            'CREATE TABLE files (data TEXT, file_type TEXT, file_name TEXT, author TEXT, room TEXT, timestamp TEXT, id TEXT, file_size INTEGER)')
-        cur.execute(
-            'CREATE TABLE users (name TEXT, id integer primary key, room TEXT, has_connected TEXT)')
+            "CREATE TABLE users (name TEXT, id integer primary key, room TEXT, has_connected TEXT)"
+        )
     conn.commit()
     conn.close()
 
@@ -102,8 +109,9 @@ def get_base64_size(base64_string):  # currently unused
 def check_rooms(REMOVE_ROOM_AFTER):
     conn = sqlite3.connect("ROOMS_db.sqlite")
     cur = conn.cursor()
-    due_time = (datetime.datetime.now() -
-                datetime.timedelta(minutes=int(REMOVE_ROOM_AFTER))).isoformat()
+    due_time = (
+        datetime.datetime.now() - datetime.timedelta(minutes=int(REMOVE_ROOM_AFTER))
+    ).isoformat()
     cur.execute(f'SELECT code FROM rooms WHERE timestamp < "{due_time}"')
     results = cur.fetchall()
     for code in results:
@@ -124,17 +132,37 @@ def get_history(room):
     conn, cur = get_db_connecton()
     history = []
     messages = cur.execute(
-        f'SELECT content, content_type, author, room, timestamp FROM messages WHERE room="{room}"').fetchall()
+        f'SELECT content, content_type, author, room, timestamp FROM messages WHERE room="{room}"'
+    ).fetchall()
     for message in messages:
         history.append(
-            {"content": message[0], "content_type": message[1], "author": message[2], "timestamp": message[4], "type": "message"})
+            {
+                "content": message[0],
+                "content_type": message[1],
+                "author": message[2],
+                "timestamp": message[4],
+                "type": "message",
+            }
+        )
     files = cur.execute(
-        f'SELECT data, file_type, file_name, author, room, timestamp, id, file_size FROM files WHERE room="{room}"').fetchall()
+        f'SELECT data, file_type, file_name, author, room, timestamp, id, file_size FROM files WHERE room="{room}"'
+    ).fetchall()
     for file in files:
-        history.append({"content": "", "fileType": file[1],
-                       "fileName": file[2], "timestamp": file[5], "type": "file", "author": file[3], "fileId": file[6],  "fileSize": file[7]})
+        history.append(
+            {
+                "content": "",
+                "fileType": file[1],
+                "fileName": file[2],
+                "timestamp": file[5],
+                "type": "file",
+                "author": file[3],
+                "fileId": file[6],
+                "fileSize": file[7],
+            }
+        )
     logs = cur.execute(
-        f'SELECT content, timestamp FROM logs WHERE room="{room}"').fetchall()
+        f'SELECT content, timestamp FROM logs WHERE room="{room}"'
+    ).fetchall()
     for log in logs:
         history.append({"type": "log", "content": log[0], "timestamp": log[1]})
     history.sort(key=lambda x: x["timestamp"])
@@ -146,7 +174,9 @@ def send_log(log, room):
     timestamp = datetime.datetime.now().isoformat()
     conn, cur = get_db_connecton()
     cur.execute(
-        "INSERT INTO logs(content, timestamp, room) VALUES(?,?,?)", (log, timestamp, room))
+        "INSERT INTO logs(content, timestamp, room) VALUES(?,?,?)",
+        (log, timestamp, room),
+    )
     conn.commit()
     conn.close()
     emit("log", {"log": log, "timestamp": timestamp}, to=room)
@@ -155,7 +185,8 @@ def send_log(log, room):
 def get_room_timestamp(room):
     conn, cur = get_db_connecton()
     timestamp = cur.execute(
-        f'SELECT timestamp FROM rooms WHERE code="{room}" ').fetchone()
+        f'SELECT timestamp FROM rooms WHERE code="{room}" '
+    ).fetchone()
     conn.close()
     return timestamp
 
@@ -163,8 +194,7 @@ def get_room_timestamp(room):
 # returns a list of all members in a room
 def get_members(room):
     conn, cur = get_db_connecton()
-    members = cur.execute(
-        f'SELECT name FROM users WHERE room="{room}"').fetchall()
+    members = cur.execute(f'SELECT name FROM users WHERE room="{room}"').fetchall()
     conn.close()
     output_members = []
     for member in members:
