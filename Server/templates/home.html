@@ -21,76 +21,114 @@ filename='icons/page_icon.png')}}"
       <h3>Encrypted Temporary chatrooms</h3>
       <p>Create a room and share texts and files up to 50mb</p>
     </div>
-    <div class="home-top">
+    <div class="home-top nav-line-0">
       <div id="home-top-nav">
-        <div>Home</div>
-        <div>Usage</div>
+        <div id="nav-home" class="nav-link-selected">Home</div>
+        <div id="nav-usage">Usage</div>
       </div>
-      <div class="create-form" id="room-form">
-        <p class="position-text">
-          <span class="primary-blue">Create or Join Room</span>
+      <div id="usage-content" class="dp-none">
+        <h3>Introduction</h3>
+        <p>
+          With SafeShare you can create temporary chatrooms, which allow you to
+          quickly share texts and files across devices.
         </p>
-        <ul class="tab-bar">
-          <li data-num="1" class="tab wave dark primary-color">Join</li>
-          <li data-num="2" class="tab wave dark" id="create-tab">
-            Create Room
-          </li>
-          <div class="indicator"></div>
-        </ul>
-        <div class="card tab-card">
-          <div class="name-form">
-            <input
-              type="text"
-              id="name-input"
-              name="name"
-              placeholder="Username"
-              value="{{name}}"
-            />
-          </div>
-          <form method="submit" class="join-form" id="join-form">
-            <input
-              placeholder="Room Code"
-              id="code-input"
-              name="code"
-              value="{{code}}"
-            />
-            <button type="submit" name="join">Join</button>
-          </form>
-          <form method="submit" id="create-form" class="dp-none">
-            <label>Room Type</label>
-            <div class="switch" id="room-type-switch">
-              <div class="switch-item switch-item-active" id="room-type-left">
-                Secured
-              </div>
-              <div class="switch-item" id="room-type-right">Open</div>
-              <div class="switch-indicator" id="switch-indicator">
-                <div class="switch-indicator-fill"></div>
-              </div>
-            </div>
-            <p id="type-warning" class="dp-none">
-              NOTE: Open rooms are accessible for anyone and messages are NOT
-              encrypted!
-            </p>
-            <input
-              type="password"
-              placeholder="Room Password"
-              id="room-password"
-              name="room-password"
-            />
-            <button
-              class="button-no-bg"
-              id="create-room-btn"
-              name="create"
-              type="submit"
-            >
-              Create New Room
-            </button>
-          </form>
-        </div>
+        <br />
+        <h3>Room Types</h3>
+        Choose between an <span class="primary-color bold">open</span> and a
+        <span class="primary-color bold">secured</span> room.
+        <br />
+        <br />
+        <p>
+          An <span class="primary-color bold">open</span> room can be accessed
+          by anyone who has the room code and its messages are
+          <span class="primary-red bold">NOT</span> secured with encryption.
+        </p>
+        <br />
+        <p>
+          A <span class="primary-color bold">secured</span> room is secured by a
+          <span class="primary-red bold">password</span>. All of its messages
+          get sent and stored in an
+          <span class="primary-color bold">encrypted state</span>, which means
+          that noone can secretly access their contents.
+        </p>
+        <br />
+        <a>Find out more about the encryption process</a>
+        <br />
+        <br />
+        <h3>Temporary</h3>
+        <p>
+          The rooms are only temporary and will close itself after
+          <span class="primary-color bold">20 minutes</span>
+          deleting all the data contained.
+        </p>
       </div>
-      <div class="recent-rooms">
-        <p class="recent-title">Your Recent Rooms</p>
-        <div class="room-list" id="recent-room-list"></div>
+      <div id="home-content">
+        <div class="create-form" id="room-form">
+          <p class="position-text">
+            <span class="primary-blue">Create or Join Room</span>
+          </p>
+          <ul class="tab-bar">
+            <li data-num="1" class="tab wave dark primary-color">Join</li>
+            <li data-num="2" class="tab wave dark" id="create-tab">
+              Create Room
+            </li>
+            <div class="indicator"></div>
+          </ul>
+          <div class="card tab-card">
+            <div class="name-form">
+              <input
+                type="text"
+                id="name-input"
+                name="name"
+                placeholder="Username"
+                value="{{name}}"
+              />
+            </div>
+            <form method="submit" class="join-form" id="join-form">
+              <input
+                placeholder="Room Code"
+                id="code-input"
+                name="code"
+                value="{{code}}"
+              />
+              <button type="submit" name="join">Join</button>
+            </form>
+            <form method="submit" id="create-form" class="dp-none">
+              <label>Room Type</label>
+              <div class="switch" id="room-type-switch">
+                <div class="switch-item switch-item-active" id="room-type-left">
+                  Secured
+                </div>
+                <div class="switch-item" id="room-type-right">Open</div>
+                <div class="switch-indicator" id="switch-indicator">
+                  <div class="switch-indicator-fill"></div>
+                </div>
+              </div>
+              <p id="type-warning" class="dp-none">
+                NOTE: Open rooms are accessible for anyone and messages are NOT
+                encrypted!
+              </p>
+              <input
+                type="password"
+                placeholder="Room Password"
+                id="room-password"
+                name="room-password"
+              />
+              <button
+                class="button-no-bg"
+                id="create-room-btn"
+                name="create"
+                type="submit"
+              >
+                Create New Room
+              </button>
+            </form>
+          </div>
+        </div>
+        <div class="recent-rooms">
+          <p class="recent-title">Your Recent Rooms</p>
+          <div class="room-list" id="recent-room-list"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -146,7 +184,7 @@ filename='icons/page_icon.png')}}"
 </div>
 <footer>
   <p>@2023 SafeShare</p>
-  <a class="bottom-link">How it works</a>
+  <a class="bottom-link">Encryption</a>
   <a class="bottom-link">Contact</a>
   <a class="bottom-link">GitHub</a>
 </footer>

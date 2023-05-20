@@ -144,6 +144,48 @@ roomTypeSwitch.addEventListener("click", (e) => {
 // ---------------------------------------------------------------- //
 const errorList = document.getElementById("error-list");
 
+// Main Nav
+let indexSelected = 0;
+let contentFadeDuration = 0.2;
+
+const homeTopNav = document.getElementById("home-top-nav");
+
+const navLinks = [
+  document.getElementById("nav-home"),
+  document.getElementById("nav-usage"),
+];
+
+const navContents = [
+  document.getElementById("home-content"),
+  document.getElementById("usage-content"),
+];
+
+const navLinePositions = [0, 100, 200, 300];
+
+for (const [i, link] of navLinks.entries()) {
+  link.addEventListener("click", (_) => {
+    if (indexSelected == i) return;
+    navContents[
+      indexSelected
+    ].style.animation = `content-fade-out ${contentFadeDuration}s ease forwards`;
+    setTimeout(() => {
+      navContents.forEach((element) => element.classList.add("dp-none"));
+      navContents[i].classList.remove("dp-none");
+      navContents[
+        i
+      ].style.animation = `content-fade-in ${contentFadeDuration}s ease forwards`;
+    }, contentFadeDuration * 1000);
+
+    navLinks[i].classList.add("nav-link-selected");
+    navLinks[indexSelected].classList.remove("nav-link-selected");
+    indexSelected = i;
+    navLinePositions.forEach((position) =>
+      homeTopNav.classList.remove(`nav-line-${position}`)
+    );
+    homeTopNav.classList.add(`nav-line-${navLinePositions[i]}`);
+  });
+}
+
 const displayError = (message) => {
   let error = document.createElement("div");
   error.classList.add("error");

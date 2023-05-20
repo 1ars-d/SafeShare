@@ -181,7 +181,7 @@ button:active {
   background-color: #db4437;
   border-radius: 100px;
   animation: error-show 4s ease-in-out forwards;
-  z-index: 100;
+  z-index: 100000000000000000;
   user-select: none;
   cursor: pointer;
 }
@@ -222,6 +222,14 @@ button:active {
 
 .primary-blue {
   color: var(--primary-blue);
+}
+
+.primary-red {
+  color: #db4437 !important;
+}
+
+.bold {
+  font-weight: 500;
 }
 
 #page-loader {
