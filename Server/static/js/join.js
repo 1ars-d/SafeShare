@@ -1,3 +1,5 @@
+// Page called when user joins room via link or qr-code to enter username
+
 const joinButton = document.getElementById("join");
 const nameInput = document.getElementById("name");
 

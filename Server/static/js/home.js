@@ -13,26 +13,33 @@ const addRoomList = () => {
   const recentRooms = JSON.parse(localStorage.getItem("recent_rooms")) || {};
   for (let key in recentRooms) {
     const closeTime = recentRooms[key].closeTime; // in minutes
+
     const targetDate = new Date(recentRooms[key].timestamp);
     targetDate.setMinutes(targetDate.getMinutes() + closeTime);
+
     const timeRemaining = targetDate.getTime() - currentDate.getTime();
+
     const minutes = Math.max(
       0,
       Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60))
     );
+
     const seconds = Math.max(
       0,
       Math.floor((timeRemaining % (1000 * 60)) / 1000)
     );
+
     // Check if room is expired
     if (minutes == 0 && seconds == 0) {
       continue;
     }
+
     const minuteString = `${minutes.toLocaleString(undefined, {
       minimumIntegerDigits: 2,
     })}:${seconds.toLocaleString(undefined, {
       minimumIntegerDigits: 2,
     })}`;
+
     const link =
       recentRooms[key].type == "secured"
         ? `/join-secured/${key}/${recentRooms[key].username}/${recentRooms[key].userId}/${recentRooms[key].password}`
@@ -46,15 +53,19 @@ const addRoomList = () => {
     );
     setInterval(() => {
       const countdown = document.getElementById(`${key}-time`);
+
       const timeRemaining = targetDate.getTime() - currentDate.getTime();
+
       const minutes = Math.max(
         0,
         Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60))
       );
+
       const seconds = Math.max(
         0,
         Math.floor((timeRemaining % (1000 * 60)) / 1000)
       );
+
       // display the countdown
       countdown.innerHTML = `${minutes.toLocaleString(undefined, {
         minimumIntegerDigits: 2,
@@ -262,7 +273,7 @@ const homeTabbarButtons = (() => {
       }
       setTimeout(function () {
         newRound.remove();
-      }, 120000);
+      }, 1200);
     };
   }
 })();

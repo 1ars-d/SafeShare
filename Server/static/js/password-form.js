@@ -1,3 +1,5 @@
+// Page called when user tries to enter secured room
+
 const passwordForm = document.getElementById("password-form");
 const passwordInput = document.getElementById("password-input");
 

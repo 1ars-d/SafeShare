@@ -1,84 +1,25 @@
+// Create socket connection
 var socketio = io();
 
-const chat = document.getElementById("chat");
-const fileDragOverlay = document.getElementById("file-drag-overlay");
-const fileDragInput = document.getElementById("drag-file-input");
-
+// HTML Elements
 const error = document.getElementById("error");
-
 const messages = document.getElementById("messages");
-const membersButton = document.getElementById("btn-members");
 const membersPopup = document.getElementById("members-popup");
-const fileInput = document.getElementById("file-select");
-const form = document.getElementById("message-form");
-
-const messageInput = document.getElementById("message");
-const messageInputContainer = document.getElementById(
-  "message-input-container"
-);
-const filePreview = document.getElementById("file-preview");
-const filePreviewText = document.getElementById("file-preview-text");
-const qrImageContainer = document.getElementById("qr-image");
-const roomPasswordText = document.getElementById("room-password-text");
 
 let roomPassword;
 
-// create qr code
-new QRCode(qrImageContainer, `${window.location.origin}/join/${roomCode}`);
+// generate qr code
+new QRCode(document.getElementById("qr-image"), `${window.location.origin}/join/${roomCode}`);
 
-fileInput.addEventListener("change", (_) => {
-  var files = fileInput.files;
-  var fileSizeMB = files[0].size / 1024 ** 2;
-  if (fileSizeMB > 50) {
-    error.innerHTML = "Cannot upload files larger than 50mb";
-    error.classList.remove("dp-none");
-    fileInput.value = "";
-    fileInput.type = "";
-    fileInput.type = "file";
-    return;
-  }
-  if (files.length) {
-    filePreview.classList.remove("dp-none");
-    messageInput.classList.add("dp-none");
-    filePreviewText.innerHTML = truncate(files[0].name, 20);
-  } else {
-    filePreview.classList.add("dp-none");
-    messageInput.classList.remove("dp-none");
-  }
-});
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
+// Item creators                                                    //
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
 
-// Room Countdown
-const targetDate = new Date(targetDateString);
-targetDate.setMinutes(targetDate.getMinutes() + closeTime);
-const countdown = document.getElementById("remaining-time");
+// Create HTML Elements from Data
 
-let startDate = new Date(startDateString);
-
-const setCountdown = () => {
-  currentDate = startDate;
-  const timeRemaining = targetDate.getTime() - currentDate.getTime();
-  const minutes = Math.max(
-    0,
-    Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60))
-  );
-  const seconds = Math.max(0, Math.floor((timeRemaining % (1000 * 60)) / 1000));
-
-  // Check if room is expired
-  if (closeRoom == "True" && minutes == 0 && seconds == 0) {
-    window.location.replace("/");
-  }
-  countdown.innerHTML = `${minutes.toLocaleString(undefined, {
-    minimumIntegerDigits: 2,
-  })}:${seconds.toLocaleString(undefined, {
-    minimumIntegerDigits: 2,
-  })}`;
-};
-
-setCountdown();
-setInterval(() => startDate.setSeconds(currentDate.getSeconds() + 1), 1000);
-setInterval(setCountdown, 1000);
-
-const createMessage = (name, message, timestamp) => {
+const createMessageItem = (name, message, timestamp) => {
   const date = formatDate(new Date(timestamp));
   const content = `
     <div class="message-item ${userName == name ? "message-item-self" : ""}">
@@ -135,50 +76,35 @@ const createFileItem = (
     });
 };
 
-function formatBytes(bytes) {
-  if (bytes < 1024) {
-    return bytes + " bytes";
-  } else if (bytes < 1048576) {
-    return (bytes / 1024).toFixed(2) + " KB";
-  } else if (bytes < 1073741824) {
-    return (bytes / 1048576).toFixed(2) + " MB";
-  } else {
-    return (bytes / 1073741824).toFixed(2) + " GB";
-  }
-}
-
-const formatDate = (date) => {
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const month = months[date.getMonth()];
-  const year = date.getFullYear();
-  const day = date.getDate();
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-
-  const formattedDate = `${day}. ${month} ${year}`;
-  const formattedTime = `${hours}:${minutes < 10 ? "0" + minutes : minutes}`;
-
-  return `${formattedTime} ${formattedDate}`;
+const createLogItem = (content, timestamp) => {
+  messages.insertAdjacentHTML(
+    "beforeend",
+    `<p>${content} - ${formatDate(new Date(timestamp))}</p>`
+  );
 };
 
+const addMemberItem = (name) => {
+  membersPopup.insertAdjacentHTML(
+    "beforeend",
+    `<p class="${name == userName ? "primary-color" : ""}">
+    ${name}
+  </p>`
+  );
+};
+
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
+// Socket events                                                    //
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
+
+// Updates members list when a new user joins
 socketio.on("join", (members) => {
   membersPopup.innerHTML = "";
   members.forEach((member) => addMemberItem(member));
 });
 
+// Called when receiving a message -> Forwards decrypted message contents to the Item Creators when
 socketio.on("message", (data) => {
   if (data.type == "text") {
     let message = data.data;
@@ -186,7 +112,7 @@ socketio.on("message", (data) => {
       decrypted = CryptoJS.AES.decrypt(data.data, roomPassword);
       message = decrypted.toString(CryptoJS.enc.Utf8);
     }
-    createMessage(data.name, message, data.timestamp);
+    createMessageItem(data.name, message, data.timestamp);
   } else if (data.type == "file") {
     createFileItem(
       data.name,
@@ -198,12 +124,14 @@ socketio.on("message", (data) => {
   }
 });
 
+// If first join -> saves room to localstorage
+// Processes message history from backend
 socketio.on("connect", (_) => {
   addRecentRoom(roomCode, targetDateString);
   const recentRooms = JSON.parse(localStorage.getItem("recent_rooms")) || {};
   if (recentRooms[roomCode].type == "secured") {
     roomPassword = recentRooms[roomCode].password;
-    roomPasswordText.innerText += ` ${roomPassword}`;
+    document.getElementById("room-password-text").innerText += ` ${roomPassword}`;
   }
   for (let message of messagesFromBackend) {
     if (message.type == "message") {
@@ -212,7 +140,7 @@ socketio.on("connect", (_) => {
         decrypted = CryptoJS.AES.decrypt(message.content, roomPassword);
         content = decrypted.toString(CryptoJS.enc.Utf8);
       }
-      createMessage(message.author, content, message.timestamp);
+      createMessageItem(message.author, content, message.timestamp);
     } else if (message.type == "file") {
       createFileItem(
         message.author,
@@ -227,33 +155,16 @@ socketio.on("connect", (_) => {
   }
 });
 
-const addRecentRoom = (code, timestampString) => {
-  const recentRooms = JSON.parse(localStorage.getItem("recent_rooms")) || {};
-  const lastTypedPassword = localStorage.getItem("last_typed_password");
-  if (!recentRooms[code]) {
-    recentRooms[code] = {
-      username: userName,
-      userId: userId,
-      timestamp: timestampString,
-      type: roomType,
-      password: lastTypedPassword,
-      closeTime: closeTime,
-    };
-    localStorage.setItem("recent_rooms", JSON.stringify(recentRooms));
-  }
-  localStorage.removeItem("last_typed_password");
-};
-
-const createLogItem = (content, timestamp) => {
-  messages.insertAdjacentHTML(
-    "beforeend",
-    `<p>${content} - ${formatDate(new Date(timestamp))}</p>`
-  );
-};
-
 socketio.on("log", (data) => {
   createLogItem(data.log, data.timestamp);
 });
+
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
+// Sending Message                                                  //
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
+
 
 const messageSendCallback = () => {
   messageInputContainer.classList.remove("message-sending");
@@ -327,9 +238,23 @@ const sendMessage = (event) => {
   message.blur();
 };
 
-const onClose = () => {
-  window.location.replace("/");
-};
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
+// Input listeners                                                  //
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
+const chat = document.getElementById("chat");
+const fileDragOverlay = document.getElementById("file-drag-overlay");
+const fileDragInput = document.getElementById("drag-file-input");
+
+const fileInput = document.getElementById("file-select");
+const form = document.getElementById("message-form");
+
+const messageInput = document.getElementById("message");
+const messageInputContainer = document.getElementById("message-input-container");
+
+const filePreview = document.getElementById("file-preview");
+const filePreviewText = document.getElementById("file-preview-text");
 
 form.addEventListener("submit", sendMessage);
 
@@ -364,54 +289,37 @@ fileDragInput.addEventListener("change", (_) => {
   }
 });
 
-const clearFileInput = () => {
-  fileInput.value = "";
-  fileInput.type = "";
-  fileInput.type = "file";
-  filePreview.classList.add("dp-none");
-  messageInput.classList.remove("dp-none");
-};
-
-const truncate = (str, n) => {
-  return str.length > n ? str.slice(0, n - 1) + "&hellip;" : str;
-};
-
-const addMemberItem = (name) => {
-  membersPopup.insertAdjacentHTML(
-    "beforeend",
-    `<p class="${name == userName ? "primary-color" : ""}">
-    ${name}
-  </p>`
-  );
-};
-
-membersButton.addEventListener("click", () => {
-  membersPopup.classList.toggle("dp-none");
+fileInput.addEventListener("change", (_) => {
+  var files = fileInput.files;
+  var fileSizeMB = files[0].size / 1024 ** 2;
+  if (fileSizeMB > 50) {
+    error.innerHTML = "Cannot upload files larger than 50mb";
+    error.classList.remove("dp-none");
+    fileInput.value = "";
+    fileInput.type = "";
+    fileInput.type = "file";
+    return;
+  }
+  if (files.length) {
+    filePreview.classList.remove("dp-none");
+    messageInput.classList.add("dp-none");
+    filePreviewText.innerHTML = truncate(files[0].name, 20);
+  } else {
+    filePreview.classList.add("dp-none");
+    messageInput.classList.remove("dp-none");
+  }
 });
 
-async function downloadFile(url, fileName) {
-  try {
-    const removeLoader = createLoader(fileName);
-    const response = await fetch(url);
-    const data = await response.json();
-    let base64String = data.file;
-    if (roomType == "secured") {
-      const decrypted = CryptoJS.AES.decrypt(data.file, roomPassword);
-      base64String = btoa(decrypted.toString(CryptoJS.enc.Utf8));
-    }
-    const downloadLink = document.createElement("a");
-    downloadLink.href = `data:${data["content-type"]};base64,${base64String}`;
-    downloadLink.download = data.fileName;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    setTimeout(() => {
-      document.body.removeChild(downloadLink);
-      removeLoader();
-    }, 100);
-  } catch (error) {
-    console.error("Error downloading the file:", error.message);
-  }
-}
+const onClose = () => {
+  location.replace("/");
+};
+
+
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
+// Utils                                                            //
+// ---------------------------------------------------------------- //
+// ---------------------------------------------------------------- //
 
 const createLoader = (fileName) => {
   const loaderContainer = document.createElement("div");
@@ -439,3 +347,103 @@ const createLoader = (fileName) => {
     }, 300);
   };
 };
+
+function formatBytes(bytes) {
+  if (bytes < 1024) {
+    return bytes + " bytes";
+  } else if (bytes < 1048576) {
+    return (bytes / 1024).toFixed(2) + " KB";
+  } else if (bytes < 1073741824) {
+    return (bytes / 1048576).toFixed(2) + " MB";
+  } else {
+    return (bytes / 1073741824).toFixed(2) + " GB";
+  }
+}
+
+const formatDate = (date) => {
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+
+  const formattedDate = `${day}. ${month} ${year}`;
+  const formattedTime = `${hours}:${minutes < 10 ? "0" + minutes : minutes}`;
+
+  return `${formattedTime} ${formattedDate}`;
+};
+
+const truncate = (str, n) => {
+  return str.length > n ? str.slice(0, n - 1) + "&hellip;" : str;
+};
+
+const addRecentRoom = (code, timestampString) => {
+  const recentRooms = JSON.parse(localStorage.getItem("recent_rooms")) || {};
+  const lastTypedPassword = localStorage.getItem("last_typed_password");
+  if (!recentRooms[code]) {
+    recentRooms[code] = {
+      username: userName,
+      userId: userId,
+      timestamp: timestampString,
+      type: roomType,
+      password: lastTypedPassword,
+      closeTime: closeTime,
+    };
+    localStorage.setItem("recent_rooms", JSON.stringify(recentRooms));
+  }
+  localStorage.removeItem("last_typed_password");
+};
+
+const clearFileInput = () => {
+  fileInput.value = "";
+  fileInput.type = "";
+  fileInput.type = "file";
+  filePreview.classList.add("dp-none");
+  messageInput.classList.remove("dp-none");
+};
+
+async function downloadFile(url, fileName) {
+  try {
+    // Create Loading state
+    const removeLoader = createLoader(fileName);
+
+    const response = await fetch(url);
+
+    const data = await response.json();
+    let base64String = data.file;
+
+    if (roomType == "secured") {
+      const decrypted = CryptoJS.AES.decrypt(data.file, roomPassword);
+      base64String = btoa(decrypted.toString(CryptoJS.enc.Utf8));
+    }
+    
+    const downloadLink = document.createElement("a");
+    downloadLink.href = `data:${data["content-type"]};base64,${base64String}`;
+    downloadLink.download = data.fileName;
+
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+
+    // Close Loading state
+    setTimeout(() => {
+      document.body.removeChild(downloadLink);
+      removeLoader();
+    }, 100);
+  } catch (error) {
+    console.error("Error downloading the file:", error.message);
+  }
+}

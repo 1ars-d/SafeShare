@@ -442,6 +442,10 @@
   padding: 5px;
 }
 
+#btn-members:hover .members-popup {
+  display: flex !important;
+}
+
 .qr-popup p {
   font-weight: 600;
   font-size: 22px;

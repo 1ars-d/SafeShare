@@ -1,2 +1,4 @@
 ROOMS_db.sqlite
 .env
+/Server/__pycache__/
+/.vscode/

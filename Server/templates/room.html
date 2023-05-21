@@ -107,7 +107,7 @@
       </button>
     </div>
     <div class="top-right">
-      <h2><span id="remaining-time">00:00</span></h2>
+      <h2><span id="remaining-time">--:--</span></h2>
       <button id="btn-close" class="top-action text-button" onclick="onClose()">
         <svg
           enable-background="new 0 0 32 32"
@@ -246,8 +246,10 @@
     <button type="submit" name="send" id="send-btn">Send</button>
   </form>
 </div>
+
 <script type="text/javascript">
-  // Setup variables passed by backend
+
+  // setup variables passed by backend
   const roomCode = "{{room}}";
   const roomType = "{{room_type}}"
   const targetDateString = "{{timestamp[0]}}";
@@ -257,41 +259,65 @@
   const closeTime = {{close_time}}; // in minutes
   const messagesFromBackend = [];
   const startDateString = "{{server_timestamp}}"
+
 </script>
+
 <script
   type="text/javascript"
   src="{{url_for('static', filename='js/room.js')}}"
 ></script>
+
+<script
+  type="text/javascript"
+  src="{{url_for('static', filename='js/room-countdown.js')}}"
+></script>
+
 {% for member in members %}
 <script type="text/javascript">
+
   // Adds members from backend
   addMemberItem("{{member}}");
+
 </script>
-{% endfor %} {% for element in history %}
+{% endfor %}
+
+{% for element in history %}
 <script type="text/javascript">
-  // Get History from backend
-  if ("{{element.type}}" == "message") {
-    messagesFromBackend.push({
-      type: "message",
-      author: "{{element.author}}",
-      content: "{{element.content}}",
-      timestamp: "{{element.timestamp}}",
-    });
-  } else if ("{{element.type}}" == "file") {
-    messagesFromBackend.push({
-      type: "file",
-      author: "{{element.author}}",
-      fileName: "{{element.fileName}}",
-      timestamp: "{{element.timestamp}}",
-      fileId: "{{element.fileId}}",
-      fileSize: "{{element.fileSize}}",
-    });
-  } else if ("{{element.type}}" == "log") {
-    messagesFromBackend.push({
-      type: "log",
-      content: "{{element.content}}",
-      timestamp: "{{element.timestamp}}",
-    });
+
+  // This code is called for every message in the list 'history' provided by backend
+  // Adds all message items to 'messagesFromBackend' -> get processed at socket.on("connect")
+  switch ("{{element.type}}") {
+    case "message":
+      messagesFromBackend.push({
+        type: "message",
+        author: "{{element.author}}",
+        content: "{{element.content}}",
+        timestamp: "{{element.timestamp}}",
+      });
+      break;
+
+    case "file":
+      messagesFromBackend.push({
+        type: "file",
+        author: "{{element.author}}",
+        fileName: "{{element.fileName}}",
+        timestamp: "{{element.timestamp}}",
+        fileId: "{{element.fileId}}",
+        fileSize: "{{element.fileSize}}",
+      });
+      break;
+
+    case "log":
+      messagesFromBackend.push({
+        type: "log",
+        content: "{{element.content}}",
+        timestamp: "{{element.timestamp}}",
+      });
+      break;
+
+    default:
+      break;
   }
+
 </script>
 {% endfor %} {% endblock %}
