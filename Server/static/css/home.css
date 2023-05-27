@@ -708,6 +708,7 @@ footer {
 .bottom-link {
   cursor: pointer;
   color: rgba(0, 0, 0, 0.7);
+  text-decoration: none;
 }
 
 .bottom-link:hover {
@@ -727,6 +728,7 @@ footer {
   background-color: rgba(0, 0, 0, 0.1);
   color: #353535;
   transition: all 0.1s ease;
+  text-decoration: none;
 }
 
 #github-link:hover {
