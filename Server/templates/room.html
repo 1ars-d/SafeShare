@@ -67,6 +67,7 @@
           </g>
         </svg>
       </button>
+      {% if room_type == "secured" %}
       <button class="top-action text-button" id="btn-password">
         <div class="password-popup">
           <p style="color: var(--main-color); font-weight: bold">
@@ -105,6 +106,7 @@
           </g>
         </svg>
       </button>
+      {% endif %}
     </div>
     <div class="top-right">
       <h2><span id="remaining-time">--:--</span></h2>

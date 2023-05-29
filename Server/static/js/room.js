@@ -68,7 +68,6 @@ const createFileItem = (
   document
     .getElementById(`file-${downloadId}`)
     .addEventListener("click", (_) => {
-      console.log("hhelo");
       downloadFile(
         `file/${downloadId}/${roomType == "secured" ? "encrypted" : "open"}`,
         fileName
