@@ -54,7 +54,7 @@ You can host this application yourself. Make sure to install all packages listed
         python main.py
 
 ## Bugs / Issues
-- application crashes when trying to send files over 10mb
+- application crashes when trying to encrypt and send files over 10mb
 
 
 
