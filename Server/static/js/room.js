@@ -9,7 +9,10 @@ const membersPopup = document.getElementById("members-popup");
 let roomPassword;
 
 // generate qr code
-new QRCode(document.getElementById("qr-image"), `${window.location.origin}/join/${roomCode}`);
+new QRCode(
+  document.getElementById("qr-image"),
+  `${window.location.origin}/join/${roomCode}`
+);
 
 // ---------------------------------------------------------------- //
 // ---------------------------------------------------------------- //
@@ -130,7 +133,9 @@ socketio.on("connect", (_) => {
   const recentRooms = JSON.parse(localStorage.getItem("recent_rooms")) || {};
   if (recentRooms[roomCode].type == "secured") {
     roomPassword = recentRooms[roomCode].password;
-    document.getElementById("room-password-text").innerText += ` ${roomPassword}`;
+    document.getElementById(
+      "room-password-text"
+    ).innerText += ` ${roomPassword}`;
   }
   for (let message of messagesFromBackend) {
     if (message.type == "message") {
@@ -163,7 +168,6 @@ socketio.on("log", (data) => {
 // Sending Message                                                  //
 // ---------------------------------------------------------------- //
 // ---------------------------------------------------------------- //
-
 
 const messageSendCallback = () => {
   messageInputContainer.classList.remove("message-sending");
@@ -250,7 +254,9 @@ const fileInput = document.getElementById("file-select");
 const form = document.getElementById("message-form");
 
 const messageInput = document.getElementById("message");
-const messageInputContainer = document.getElementById("message-input-container");
+const messageInputContainer = document.getElementById(
+  "message-input-container"
+);
 
 const filePreview = document.getElementById("file-preview");
 const filePreviewText = document.getElementById("file-preview-text");
@@ -270,9 +276,8 @@ fileDragInput.addEventListener("change", (_) => {
   fileInput.files = fileDragInput.files;
   var files = fileInput.files;
   var fileSizeMB = files[0].size / 1024 ** 2;
-  if (fileSizeMB > 50) {
-    error.innerHTML = "Cannot upload files larger than 50mb";
-    error.classList.remove("dp-none");
+  if (fileSizeMB > maxUpload) {
+    displayError("Cannot upload files larger than 50mb");
     fileInput.value = "";
     fileInput.type = "";
     fileInput.type = "file";
@@ -291,9 +296,8 @@ fileDragInput.addEventListener("change", (_) => {
 fileInput.addEventListener("change", (_) => {
   var files = fileInput.files;
   var fileSizeMB = files[0].size / 1024 ** 2;
-  if (fileSizeMB > 50) {
-    error.innerHTML = "Cannot upload files larger than 50mb";
-    error.classList.remove("dp-none");
+  if (fileSizeMB > maxUpload) {
+    displayError("Cannot upload files larger than 50mb");
     fileInput.value = "";
     fileInput.type = "";
     fileInput.type = "file";
@@ -312,7 +316,6 @@ fileInput.addEventListener("change", (_) => {
 const onClose = () => {
   location.replace("/");
 };
-
 
 // ---------------------------------------------------------------- //
 // ---------------------------------------------------------------- //
@@ -358,6 +361,18 @@ function formatBytes(bytes) {
     return (bytes / 1073741824).toFixed(2) + " GB";
   }
 }
+
+const errorList = document.getElementById("error-list");
+
+const displayError = (message) => {
+  let error = document.createElement("div");
+  error.classList.add("error");
+  error.innerText = message;
+  errorList.appendChild(error);
+  setTimeout(() => {
+    error.remove();
+  }, 4000);
+};
 
 const formatDate = (date) => {
   const months = [
@@ -429,7 +444,7 @@ async function downloadFile(url, fileName) {
       const decrypted = CryptoJS.AES.decrypt(data.file, roomPassword);
       base64String = btoa(decrypted.toString(CryptoJS.enc.Utf8));
     }
-    
+
     const downloadLink = document.createElement("a");
     downloadLink.href = `data:${data["content-type"]};base64,${base64String}`;
     downloadLink.download = data.fileName;

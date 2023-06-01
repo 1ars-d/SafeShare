@@ -28,7 +28,9 @@ Here is a screenshot of the browser:
 This app is based on a [Flask](https://flask.palletsprojects.com/) webserver and uses WebSockets ([SocketIO](https://socket.io/)) for realtime messages. It uses an SQLite database to store data.
 
 ## How the encryption process works
+
 A room secured with a password is created
+
 - when creating or joining a room it's password is stored in LocalStorage on the client.
 - Serverside the passwords are stored as a hash
 
@@ -42,19 +44,19 @@ A room secured with a password is created
 
 You can host this application yourself. Make sure to install all packages listed in requirements.txt
 
-- create a ```.env``` file in the same dir as ```main.py``` to specify
+- create a `.env` file in the same dir as `main.py` to specify
 
         REMOVE_ROOMS=True # 'FALSE' or 'TRUE'
         REMOVE_ROOMS_AFTER=20 # in minutes
         MAX_BUFFER_SIZE=50000000 # 50 MB
+        ENCRYPTED_MAX_UPLOAD=8 # in mb
+        MAX_UPLOAD=50 # in mb
         HOST=192.168.178.57 # IPv4
 
-- Then run in ```Server```
+- Then run in `Server`
 
         python main.py
 
 ## Bugs / Issues
+
 - application crashes when trying to encrypt and send files over 10mb
-
-
-

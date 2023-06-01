@@ -1,5 +1,5 @@
 {% extends 'base.html' %} {% block content %}
-<p class="error dp-none" id="error"></p>
+<div id="error-list"></div>
 <div id="chat" class="chat">
   <div class="file-drag-screen dp-none" id="file-drag-overlay">
     <label for="drag-file-input" class="drag-file-label">
@@ -253,15 +253,15 @@
 
   // setup variables passed by backend
   const roomCode = "{{room}}";
-  const roomType = "{{room_type}}"
+  const roomType = "{{room_type}}";
   const targetDateString = "{{timestamp[0]}}";
   const userName = "{{name}}";
   const userId = "{{user_id}}";
-  const closeRoom = "{{close_room}}"
+  const closeRoom = "{{close_room}}";
   const closeTime = {{close_time}}; // in minutes
   const messagesFromBackend = [];
-  const startDateString = "{{server_timestamp}}"
-
+  const startDateString = "{{server_timestamp}}";
+  const maxUpload = parseInt("{{max_upload}}");
 </script>
 
 <script
@@ -276,16 +276,11 @@
 
 {% for member in members %}
 <script type="text/javascript">
-
   // Adds members from backend
   addMemberItem("{{member}}");
-
 </script>
-{% endfor %}
-
-{% for element in history %}
+{% endfor %} {% for element in history %}
 <script type="text/javascript">
-
   // This code is called for every message in the list 'history' provided by backend
   // Adds all message items to 'messagesFromBackend' -> get processed at socket.on("connect")
   switch ("{{element.type}}") {
@@ -320,6 +315,5 @@
     default:
       break;
   }
-
 </script>
 {% endfor %} {% endblock %}

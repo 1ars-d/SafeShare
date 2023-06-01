@@ -62,6 +62,7 @@ def room():  # Checks if room stored in session exists and provides
     user_id = session.get("user_id")
     if not room_exists(room):
         return redirect(url_for("home"))
+    room_type = get_room_type(room)
     return render_template(
         "room.html",
         room=room,
@@ -71,9 +72,10 @@ def room():  # Checks if room stored in session exists and provides
         user_id=user_id,
         members=get_members(room),
         close_time=env_config["REMOVE_ROOMS_AFTER"],
-        room_type=get_room_type(room),
+        room_type=room_type,
         close_room=env_config["REMOVE_ROOMS"],
         server_timestamp=fetch_timestamp(),
+        max_upload=env_config["ENCRYPTED_MAX_UPLOAD"] if room_type == "secured" else env_config["MAX_UPLOAD"]
     )
 
 
