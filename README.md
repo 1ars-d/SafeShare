@@ -23,6 +23,8 @@ Here is a screenshot of the browser:
 
 ![Screenshot](Screenshot.png "Screenshot")
 
+![Desktop Screenshot 2024 01 27 - 12 55 42 85](https://github.com/1ars-d/SafeShare/assets/71517515/3906c117-16b8-49d8-8a57-25a5c95f7b1a)
+
 ## Technologies
 
 This app is based on a [Flask](https://flask.palletsprojects.com/) webserver and uses WebSockets ([SocketIO](https://socket.io/)) for realtime messages. It uses an SQLite database to store data.
