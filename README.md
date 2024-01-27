@@ -19,7 +19,7 @@ When creating a room its code is automatically generated. This code can then be 
 
 Rooms are only temporary. They (and their data) will be removed after 20 minutes.
 
-Here is a screenshot of the browser:
+Here is a demonstration video and some screenshots:
 
 [![Preview Video](https://img.youtube.com/vi/T5PgWZuBvI0/0.jpg)](https://www.youtube.com/watch?v=T5PgWZuBvI0)
 
