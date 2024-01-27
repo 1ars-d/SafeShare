@@ -7,7 +7,7 @@
 
 # SafeShare
 
-A web chat app
+A web chat app based on user-created rooms.
 
 ## Functionality
 
