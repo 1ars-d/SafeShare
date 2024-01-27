@@ -29,7 +29,8 @@ from utilities import (
 
 # Server Setup
 app = Flask(__name__)
-env_config = dotenv.dotenv_values(".env")
+env_config = dotenv.dotenv_values(dotenv.find_dotenv())
+print(env_config.keys())
 app.config["SECRET_KEY"] = "key!"
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
 app.config["MAX_CONTENT_LENGTH"] = int(env_config["MAX_BUFFER_SIZE"])
