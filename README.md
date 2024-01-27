@@ -21,9 +21,9 @@ Rooms are only temporary. They (and their data) will be removed after 20 minutes
 
 Here is a screenshot of the browser:
 
-![Screenshot](Screenshot.png "Screenshot")
-
 ![Desktop Screenshot 2024 01 27 - 12 55 42 85](https://github.com/1ars-d/SafeShare/assets/71517515/3906c117-16b8-49d8-8a57-25a5c95f7b1a)
+
+![Screenshot](Screenshot.png "Screenshot")
 
 ## Technologies
 
