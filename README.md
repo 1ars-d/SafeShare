@@ -46,4 +46,5 @@ You can host this application yourself. Make sure to install all packages listed
 
 ## Bugs / Issues
 
-- application crashes when trying to encrypt and send files over 10mb
+- application crashes when trying to encrypt and send files over 10mb because encryption takes too long.
+  Possible solution: split up file in to packets and encrypt individually
