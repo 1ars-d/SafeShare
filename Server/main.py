@@ -253,7 +253,7 @@ def join_enter_password(room, name, user_id):
 def download_file(file_id, save_type):
     conn, cur = get_db_connecton()
     file = cur.execute(
-        f'SELECT data, file_type, file_name FROM files WHERE id="{file_id}"'
+        'SELECT data, file_type, file_name FROM files WHERE id=?', file_id
     ).fetchone()
     if not file:
         return abort(400, "Record not found")
